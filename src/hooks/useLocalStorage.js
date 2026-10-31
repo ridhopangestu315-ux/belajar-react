@@ -5,7 +5,11 @@ export function useLocalStorage(key, initialValue) {
   const [value, setValue] = useState(() => {
     try {
       const savedValue = localStorage.getItem(key)
-      return savedValue ? JSON.parse(savedValue) : initialValue
+      if (savedValue === null) return initialValue
+      const parsedValue = JSON.parse(savedValue)
+      if (Array.isArray(initialValue) && !Array.isArray(parsedValue)) return initialValue
+      if (initialValue && typeof initialValue === 'object' && !Array.isArray(initialValue) && (!parsedValue || typeof parsedValue !== 'object' || Array.isArray(parsedValue))) return initialValue
+      return parsedValue
     } catch {
       return initialValue
     }

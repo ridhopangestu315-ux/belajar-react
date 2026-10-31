@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -316,4 +318,59 @@ button:active { transform:scale(.98); }
 @media(max-width:760px) { .main-area { margin-left:0; } .sidebar { transform:translateX(-105%); } .sidebar.sidebar-open { transform:translateX(0); } }
 @media(max-width:760px) { .today-pill { display:none; } .topbar { padding-inline:12px; } .topbar-actions { gap:6px; } .breadcrumb { gap:5px; font-size:10px; } .welcome-row { width:100%; min-width:0; } .welcome-row>div { min-width:0; } .welcome-row .primary-button { flex:0 0 36px; width:36px; padding:0; font-size:0; gap:0; margin-left:auto; margin-right:18px; } .welcome-row .primary-button svg { width:18px; height:18px; } .page-content { overflow-x:hidden; padding-right:36px; } }
 @media(max-width:760px) { .main-area { width:100%; min-width:0; max-width:100vw; overflow-x:hidden; } .dashboard-grid,.dashboard-grid>.panel,.page-content { min-width:0; max-width:100%; } .dashboard-grid>.panel { width:100%; } .panel-heading { min-width:0; } }
+
+/* Palette and type drawn from the supplied StudyFlow HTML reference. */
+:root { font-family:'Plus Jakarta Sans',sans-serif; color-scheme:light; --ink:#302923; --muted:#898075; --line:#e9e2d8; --panel:#fff; --canvas:#faf8f5; --purple:#c2573f; --soft:#faede9; --terra:#c2573f; --sage:#4d7260; }
+:root[data-theme="dark"] { color-scheme:dark; --ink:#efebe6; --muted:#aaa198; --line:#403832; --panel:#1e1a17; --canvas:#151311; --soft:#39251f; --purple:#e29784; --terra:#e29784; --sage:#83a893; }
+body { background:var(--canvas); color:var(--ink); font-family:'Plus Jakarta Sans',sans-serif; }
+.welcome-row h1,.panel h2,.brand,.stat-value,.timer-circle strong,.modal-heading h2 { font-family:Outfit,'Plus Jakarta Sans',sans-serif; }
+.sidebar { width:256px; background:var(--panel); }
+.main-area { margin-left:256px; }
+.brand-mark { background:linear-gradient(135deg,#d5735b,#a4442f); box-shadow:0 4px 12px #c2573f30; }
+.brand-accent,.nav-link.active,.text-button,.note-label { color:var(--terra); }
+.nav-link.active { background:#faede9; }
+.nav-link.active:before { background:var(--terra); }
+.nav-link:hover { color:var(--terra); }
+.primary-button { background:var(--terra); box-shadow:0 4px 12px #c2573f22; }
+.primary-button:hover { background:#a4442f; }
+.dashboard-summary { border-color:var(--line); }
+.dashboard-summary .summary-title { color:var(--ink); }
+.panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:19px; box-shadow:0 2px 8px #34271c06; }
+.progress-panel { grid-column:auto; }
+.subject-card,.note-card { background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+.stat-card { background:var(--panel); border-color:var(--line); border-radius:12px; }
+.stat-icon.purple { background:#faede9; color:#a4442f; }
+.stat-icon.blue { background:#e6ede8; color:#3d5c4c; }
+.stat-icon.green { background:#e6ede8; color:#3d5c4c; }
+.stat-icon.orange { background:#f8eedf; color:#a46721; }
+.progress-ring { background:conic-gradient(var(--terra) var(--progress),var(--line) 0); }
+.legend-dot.purple-dot { background:var(--terra); }
+.soft-message,.focus-tabs button.selected { background:var(--soft); color:var(--terra); }
+.big-progress-bar span { background:var(--terra); }
+.calendar-event.event-task { background:#faede9; color:#a4442f; }
+.calendar-event.event-activity { background:#e6ede8; color:#3d5c4c; }
+.timer-circle { background:conic-gradient(var(--terra) 0 68%,var(--line) 68%); }
+.focus-side-icon { background:var(--soft); color:var(--terra); }
+.focus-quote { background:var(--canvas); color:var(--muted); }
+.empty-mark,.activity-mark { background:var(--soft); color:var(--terra); }
+.sidebar-note { color:var(--ink); }
+:root[data-theme="dark"] .nav-link.active { background:#39251f; color:#f0b5a5; }
+:root[data-theme="dark"] .panel,:root[data-theme="dark"] .stat-card,:root[data-theme="dark"] .subject-card,:root[data-theme="dark"] .note-card { background:var(--panel); border-color:var(--line); box-shadow:0 4px 16px #0002; }
+:root[data-theme="dark"] .stat-icon.purple,:root[data-theme="dark"] .stat-icon.blue,:root[data-theme="dark"] .stat-icon.green,:root[data-theme="dark"] .stat-icon.orange { background:var(--soft); color:var(--ink); }
+:root[data-theme="dark"] .calendar-event.event-task,:root[data-theme="dark"] .calendar-event.event-activity { background:var(--soft); color:var(--ink); }
+:root[data-theme="dark"] .timer-circle { background:conic-gradient(var(--terra) 0 68%,var(--line) 68%); }
+:root[data-theme="dark"] .sidebar-note { background:transparent; color:var(--ink); }
+::-webkit-scrollbar-thumb { background:#c2573f55; border-radius:99px; }
+@media(max-width:1100px) { .sidebar { width:225px; } .main-area { margin-left:225px; } }
+@media(max-width:760px) { .sidebar { width:270px; } .main-area { margin-left:0; } .panel { padding:16px; } }
+@media(prefers-reduced-motion:reduce) { .progress-animate,.activity-enter,.page-content,.modal-backdrop,.modal-card,.toast-enter { animation:none!important; } }
+.calendar-day { color:var(--ink); background:transparent; text-align:left; font:inherit; border-radius:0; }
+.calendar-day:disabled { cursor:default; }
+.calendar-day.is-selected { background:var(--soft); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--terra) 38%,transparent); }
+.calendar-day.is-selected .day-number { color:var(--terra); font-weight:700; }
+.calendar-selected { border-top:1px solid var(--line); margin-top:16px; padding-top:14px; }
+.calendar-selected h3 { font:600 14px Outfit,'Plus Jakarta Sans',sans-serif; margin:0 0 10px; }
+.selected-event-list { display:grid; gap:8px; }
+.selected-event { display:flex; align-items:center; gap:8px; font-size:12px; padding:7px 0; }
+:root[data-theme="dark"] .calendar-day.is-selected { background:var(--soft); }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
