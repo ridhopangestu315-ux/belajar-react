@@ -1,4 +1,5 @@
-import { Sparkles, Trash2 } from 'lucide-react'
+import { Settings2, Sparkles, Trash2 } from 'lucide-react'
+import PengantarHalaman from '../komponen/PengantarHalaman.jsx'
 
 export function HalamanPengaturan({ pengaturan, aturPengaturan, onReset }) {
   const defaults = { name:'', educationLevel:'', classLevel:'', institution:'', theme:'light', focusMinutes:25, shortBreak:5, longBreak:15 }
@@ -9,8 +10,8 @@ export function HalamanPengaturan({ pengaturan, aturPengaturan, onReset }) {
   function aturUlangPengaturan() {
     aturPengaturan(defaults)
   }
-  return <>
-    <div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / PREFERENSI</p><h1>Pengaturan</h1><p className="muted">Atur profil dan ruang belajar sesuai kebutuhanmu.</p></div></div>
+  return <div className="non-dashboard-page">
+    <PengantarHalaman halaman="Pengaturan" judul="Pengaturan" deskripsi="Sesuaikan aplikasi dan informasi profil sesuai kebutuhanmu." Ikon={Settings2}/>
     <div className="settings-layout">
       <section className="panel settings-panel">
         <h2>Profil belajar</h2>
@@ -30,5 +31,5 @@ export function HalamanPengaturan({ pengaturan, aturPengaturan, onReset }) {
       </section>
       <aside className="panel settings-tip"><span className="focus-side-icon"><Sparkles size={20} /></span><h2>Belajar dengan caramu</h2><p>Informasi jenjang dan institusi bersifat opsional. StudyFlow tetap bisa digunakan untuk belajar mandiri.</p></aside>
     </div>
-  </>
+  </div>
 }

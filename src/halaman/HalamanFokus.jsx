@@ -1,10 +1,24 @@
-import { Sparkles, Target } from 'lucide-react'
+﻿import { Clock3, Sparkles, Target } from 'lucide-react'
 import { TampilanKosong } from '../komponen/KomponenBelajar.jsx'
+import PengantarHalaman from '../komponen/PengantarHalaman.jsx'
 import { ubahDariKunciTanggalLokal } from '../fungsi-bantuan/tanggal.js'
 
 export function HalamanFokus({ mode, seconds, running, sessions, history, onMode, onRun, onPause, onReset }) {
   const minutes = String(Math.floor(seconds / 60)).padStart(2, '0')
   const remainingSeconds = String(seconds % 60).padStart(2, '0')
   const sesiFokusTerbaru = history.filter((session) => session.type === 'Fokus').slice(0, 5)
-  return <><div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / FOCUS MODE</p><h1>Waktunya fokus</h1><p className="muted">Satu hal dalam satu waktu. Kamu pasti bisa.</p></div></div><div className="focus-layout"><section className="panel focus-panel"><div className="focus-tabs">{['Fokus', 'Istirahat pendek', 'Istirahat panjang'].map((item) => <button key={item} className={mode === item ? 'selected' : ''} onClick={() => onMode(item)}>{item}</button>)}</div><div className={running ? 'timer-circle timer-active' : 'timer-circle'}><span>{mode.toUpperCase()}</span><strong>{minutes}:{remainingSeconds}</strong><small>Tarik napas, dan mulai.</small></div><div className="timer-actions">{running ? <button className="primary-button" onClick={onPause}>Jeda</button> : <button className="primary-button" onClick={onRun}>{seconds === 0 ? 'Mulai lagi' : 'Mulai fokus'}</button>}<button className="secondary-button" onClick={onReset}>Atur ulang</button></div><p className="timer-caption"><Target size={16}/>Sesi fokus selesai <strong>{sessions}</strong></p></section><aside className="panel focus-side"><span className="focus-side-icon"><Sparkles size={21}/></span><h2>Jaga ritmemu</h2><p>Fokus selama satu sesi, lalu ambil jeda sejenak untuk mengisi energi.</p><div className="focus-step"><span>01</span><p><strong>Fokus</strong><small>Belajar tanpa gangguan</small></p><b>25 menit</b></div><div className="focus-step"><span>02</span><p><strong>Istirahat</strong><small>Regangkan tubuhmu</small></p><b>5 menit</b></div><div className="focus-quote">“Kemajuan kecil yang konsisten membawa hasil besar.”</div></aside></div><section className="panel focus-history"><div className="panel-heading"><div><p className="eyebrow">RIWAYAT SESI</p><h2>Sesi fokus terakhir</h2></div></div>{sesiFokusTerbaru.length ? sesiFokusTerbaru.map((session) => <div className="focus-history-row" key={session.id}><span>{new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'short',year:'numeric'}).format(ubahDariKunciTanggalLokal(session.completedDate))}</span><strong>{Math.round(session.durationSeconds / 60)} menit</strong></div>) : <TampilanKosong text="Sesi fokus yang selesai akan muncul di sini."/>}</section></>
+
+  return <div className="non-dashboard-page">
+    <PengantarHalaman halaman="Focus Mode" judul="Waktunya fokus" deskripsi="Bukan soal siapa yang paling cepat, tapi siapa yang terus melangkah." Ikon={Clock3}/>
+    <div className="focus-layout">
+      <section className="panel focus-panel">
+        <div className="focus-tabs">{['Fokus', 'Istirahat pendek', 'Istirahat panjang'].map((item) => <button key={item} className={mode === item ? 'selected' : ''} onClick={() => onMode(item)}>{item}</button>)}</div>
+        <div className={running ? 'timer-circle timer-active' : 'timer-circle'}><span>{mode.toUpperCase()}</span><strong>{minutes}:{remainingSeconds}</strong><small>Tarik napas, dan mulai.</small></div>
+        <div className="timer-actions">{running ? <button className="primary-button" onClick={onPause}>Jeda</button> : <button className="primary-button" onClick={onRun}>{seconds === 0 ? 'Mulai lagi' : 'Mulai fokus'}</button>}<button className="secondary-button" onClick={onReset}>Atur ulang</button></div>
+        <p className="timer-caption"><Target size={16}/>Sesi fokus selesai <strong>{sessions}</strong></p>
+      </section>
+      <aside className="panel focus-side"><span className="focus-side-icon"><Sparkles size={21}/></span><h2>Jaga ritmemu</h2><p>Fokus selama satu sesi, lalu ambil jeda sejenak untuk mengisi energi.</p><div className="focus-step"><span>01</span><p><strong>Fokus</strong><small>Belajar tanpa gangguan</small></p><b>25 menit</b></div><div className="focus-step"><span>02</span><p><strong>Istirahat</strong><small>Regangkan tubuhmu</small></p><b>5 menit</b></div><div className="focus-quote">“Kemajuan kecil yang konsisten membawa hasil besar.”</div></aside>
+    </div>
+    <section className="panel focus-history"><div className="panel-heading"><div><p className="eyebrow">RIWAYAT SESI</p><h2>Sesi fokus terakhir</h2></div></div>{sesiFokusTerbaru.length ? sesiFokusTerbaru.map((session) => <div className="focus-history-row" key={session.id}><span>{new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'short',year:'numeric'}).format(ubahDariKunciTanggalLokal(session.completedDate))}</span><strong>{Math.round(session.durationSeconds / 60)} menit</strong></div>) : <TampilanKosong text="Sesi fokus yang selesai akan muncul di sini."/>}</section>
+  </div>
 }

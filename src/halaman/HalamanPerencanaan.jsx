@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { CheckCircle2, ChevronLeft, ChevronRight, Circle, Plus, Search, Trash2 } from 'lucide-react'
+import { Bell, BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Circle, ClipboardList, NotebookPen, Plus, Search, Trash2 } from 'lucide-react'
 import { TampilanKosong } from '../komponen/KomponenBelajar.jsx'
+import PengantarHalaman from '../komponen/PengantarHalaman.jsx'
 import { ubahKeKunciTanggalLokal as tanggalHariIni } from '../fungsi-bantuan/tanggal.js'
 
 export function HalamanData({ page, data, kataPencarian, aturKataPencarian, filter, setFilter, filterMataPelajaran, aturFilterMataPelajaran, onAdd, onEdit, onDelete, onToggle }) {
@@ -13,11 +14,14 @@ export function HalamanData({ page, data, kataPencarian, aturKataPencarian, filt
     return searchable && (filter === 'Semua tugas' || filter === 'Belum selesai' && !item.done || filter === 'Selesai' && item.done || filter === 'Prioritas tinggi' && item.priority === 'Tinggi' || filter === 'Sedang dikerjakan' && item.status === 'Sedang dikerjakan')
   })
   const addLabel = apakahMataPelajaran ? 'Tambah mata pelajaran' : page === 'Tugas' ? 'Tambah tugas' : page === 'Catatan' ? 'Tambah catatan' : 'Tambah pengingat'
-  return <><div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / {page.toUpperCase()}</p><h1>{page}</h1><p className="muted">{deskripsiHalaman[page]}</p></div><button className="primary-button" onClick={onAdd}><Plus size={18}/>{addLabel}</button></div>
+  const ikonHalaman = apakahMataPelajaran ? BookOpen : page === 'Tugas' ? ClipboardList : page === 'Catatan' ? NotebookPen : Bell
+  const aksiTambah = <button className="primary-button" onClick={onAdd}><Plus size={18}/><span>{addLabel}</span></button>
+  return <div className="non-dashboard-page"><PengantarHalaman halaman={page} judul={page} deskripsi={deskripsiHalaman[page]} Ikon={ikonHalaman} aksi={aksiTambah}/>
     <section className="panel data-panel"><div className="data-toolbar"><div className="search-box"><Search size={17}/><input value={kataPencarian} onChange={(event) => aturKataPencarian(event.target.value)} placeholder={`Cari ${page.toLowerCase()}...`}/></div>{page === 'Tugas' && <select className="select-control" value={filter} onChange={(event) => setFilter(event.target.value)}>{['Semua tugas', 'Belum selesai', 'Sedang dikerjakan', 'Selesai', 'Prioritas tinggi'].map((option) => <option key={option}>{option}</option>)}</select>}{apakahMataPelajaran && <select className="select-control" value={filterMataPelajaran} onChange={(event) => aturFilterMataPelajaran(event.target.value)}><option>Semua bidang</option>{kategoriMataPelajaran.map((category) => <option key={category}>{category}</option>)}</select>}</div>
-      {filtered.length ? <div className={page === 'Mata Pelajaran' || page === 'Catatan' ? 'cards-grid' : 'records-list'}>{filtered.map((item) => <KartuData key={item.id} item={item} page={page} onEdit={() => onEdit(item)} onDelete={() => onDelete(item.id)} onToggle={() => onToggle(item.id)}/>)}</div> : <TampilanKosong text={`Belum ada ${page.toLowerCase()} di sini. Gunakan tombol tambah untuk memulai.`}/>}</section></>
+      {filtered.length ? <div className={page === 'Mata Pelajaran' || page === 'Catatan' ? 'cards-grid' : 'records-list'}>{filtered.map((item) => <KartuData key={item.id} item={item} page={page} onEdit={() => onEdit(item)} onDelete={() => onDelete(item.id)} onToggle={() => onToggle(item.id)}/>)}</div> : data.length ? <TampilanKosong text={`Tidak ada ${page.toLowerCase()} yang cocok dengan pencarianmu.`} Ikon={ikonHalaman} gayaHalaman/> : <TampilanKosong Ikon={ikonHalaman} text={`Belum ada ${page.toLowerCase()} di sini.`} subtext="Gunakan tombol tambah untuk memulai." actionLabel={addLabel} onAction={onAdd} gayaHalaman/>}</section>
+  </div>
 }
-const deskripsiHalaman = { 'Mata Pelajaran': 'Atur materi, pengajar, kategori, dan jadwal belajarmu.', Tugas: 'Kelola tugas dan jaga deadline tetap terkendali.', Catatan: 'Simpan ide dan catatan belajarmu.', Pengingat: 'Ingat aktivitas penting yang akan datang.' }
+const deskripsiHalaman = { 'Mata Pelajaran': 'Your subjects, your schedule, your progress!', Tugas: 'Kelola tugas dan jaga deadline tetap terkendali.', Catatan: 'Jangan sampai ide bagusmu lupa dicatat!', Pengingat: 'Ingat aktivitas penting yang akan datang.' }
 function KartuData({ item, page, onEdit, onDelete, onToggle }) {
   if (page === 'Tugas') return <div className={`record-task ${item.done ? 'task-done' : ''}`}><button className="check-button" onClick={onToggle} aria-label="Ubah status">{item.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="record-body"><strong>{item.title}</strong><p>{item.description || 'Tidak ada deskripsi'}</p><span>{item.subject || 'Tanpa mata pelajaran'} · Deadline {item.deadline || 'belum ditentukan'}</span></div><span className={`priority priority-${(item.priority || 'sedang').toLowerCase()}`}>{item.status || (item.done ? 'Selesai' : item.priority || 'Sedang')}</span><AksiCatatan onEdit={onEdit} onDelete={onDelete}/></div>
   if (page === 'Mata Pelajaran') return <article className="subject-card" style={{ '--subject-color': item.color || '#D5735B' }}><div className="subject-card-top"><span className="subject-color-dot"/><span>{item.category || 'UMUM'}{item.level ? ` · ${item.level}` : ''}</span><AksiCatatan onEdit={onEdit} onDelete={onDelete}/></div><h3>{item.name}</h3>{item.teacher && <p>Pengajar: {item.teacher}</p>}{item.description && <p className="subject-description">{item.description}</p>}{item.code && <span className="subject-code">Kode pelajaran: {item.code}</span>}<div className="subject-schedule">{(item.schedule || []).map((slot, i) => <span key={i}>{slot.day} · {slot.start}–{slot.end}{slot.room ? ` · ${slot.room}` : ''}</span>)}{!item.schedule?.length && <span>Jadwal belajar belum ditambahkan</span>}</div></article>
@@ -43,11 +47,8 @@ export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivi
   const todayMatches = monthDate.getMonth() === now.getMonth() && monthDate.getFullYear() === now.getFullYear()
   const tanggalTerpilih = selectedDate.startsWith(`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}-`) ? Number(selectedDate.slice(-2)) : null
   const selectedEvents = tanggalTerpilih ? events(tanggalTerpilih) : []
-  return <>
-    <div className="welcome-row">
-      <div><p className="eyebrow">STUDYFLOW / KALENDER</p><h1>Kalender belajar</h1><p className="muted">Lihat deadline dan rencanakan kegiatanmu.</p></div>
-      <button className="primary-button" onClick={onAdd}><Plus size={18} />Tambah kegiatan</button>
-    </div>
+  return <div className="non-dashboard-page">
+    <PengantarHalaman halaman="Kalender" judul="Kalender belajar" deskripsi="Lihat dan atur jadwal kegiatan belajarmu." Ikon={CalendarDays} aksi={<button className="primary-button" onClick={onAdd}><Plus size={18} /><span>Tambah kegiatan</span></button>}/>
     <section className="panel calendar-panel">
       <div className="calendar-header">
         <button className="icon-button" onClick={() => aturSelisihBulan((offset) => offset - 1)} aria-label="Bulan sebelumnya"><ChevronLeft size={20} /></button>
@@ -75,5 +76,5 @@ export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivi
         })}</div> : <p className="muted">Tidak ada kegiatan tercatat pada tanggal ini.</p>}
       </section>
     </section>
-  </>
+  </div>
 }

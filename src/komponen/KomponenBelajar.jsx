@@ -19,7 +19,7 @@ export function HitungNaik({ value, active }) {
   }, [active, value])
   return active ? displayValue : value
 }
-export function TampilanKosong({ text, actionLabel, onAction }) { return <div className="empty-state"><span className="empty-mark"><Sparkles size={18}/></span><p>{text}</p>{onAction && <button className="text-button empty-action" onClick={onAction}>{actionLabel}<ChevronRight size={15}/></button>}</div> }
+export function TampilanKosong({ text, subtext, actionLabel, onAction, Ikon = Sparkles, gayaHalaman = false }) { return <div className="empty-state"><span className="empty-mark"><Ikon size={gayaHalaman ? 22 : 18}/></span>{gayaHalaman ? <div className="empty-copy"><p>{text}</p>{subtext && <span>{subtext}</span>}</div> : <p>{text}</p>}{onAction && <button className="text-button empty-action" onClick={onAction}>{actionLabel}<ChevronRight size={15}/></button>}</div> }
 export function BarisTugas({ task, onToggle }) {
   const tanggalHariIni = ubahKeKunciTanggalLokal()
   const late = task.deadline && task.deadline < tanggalHariIni

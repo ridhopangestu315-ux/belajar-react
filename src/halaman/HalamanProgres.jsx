@@ -1,5 +1,6 @@
-import { CalendarDays, Check, CheckCircle2, Clock3, Target, Timer } from 'lucide-react'
+import { Activity, CalendarDays, Check, CheckCircle2, Clock3, Target, Timer } from 'lucide-react'
 import { TampilanKosong, KartuStatistik } from '../komponen/KomponenBelajar.jsx'
+import PengantarHalaman from '../komponen/PengantarHalaman.jsx'
 import { ambilKunciTanggalTerbaru, ubahDariKunciTanggalLokal, ubahKeKunciTanggalLokal as tanggalHariIni } from '../fungsi-bantuan/tanggal.js'
 
 export function HalamanProgres({ daftarTugas, daftarMataPelajaran, sessions, riwayatFokus, daftarAktivitas, now }) {
@@ -14,10 +15,8 @@ export function HalamanProgres({ daftarTugas, daftarMataPelajaran, sessions, riw
   const weekKeys = new Set(ambilKunciTanggalTerbaru(now))
   const weeklyFocusRecords = focusRecords.filter((session) => weekKeys.has(session.completedDate))
   const menitFokusMingguan = weeklyFocusRecords.reduce((total, session) => total + session.durationSeconds / 60, 0)
-  return <>
-    <div className="welcome-row">
-      <div><p className="eyebrow">STUDYFLOW / INSIGHT</p><h1>Progress belajar</h1><p className="muted">Lihat perkembangan dan rayakan kemajuanmu.</p></div>
-    </div>
+  return <div className="non-dashboard-page">
+    <PengantarHalaman halaman="Progress Belajar" judul="Progress belajar" deskripsi="Pantau perkembangan dan kebiasaan belajarmu." Ikon={Activity}/>
     <div className="stats-grid progress-summary-grid">
       <KartuStatistik title="Total tugas" value={daftarTugas.length} hint="Tercatat" icon={<CheckCircle2 />} tone="purple" />
       <KartuStatistik title="Tugas selesai" value={completed} hint={`${percent}% dari total`} icon={<Check />} tone="green" />
@@ -52,5 +51,5 @@ export function HalamanProgres({ daftarTugas, daftarMataPelajaran, sessions, riw
         <p className="muted">Riwayat durasi mulai dihitung dari sesi yang selesai setelah pembaruan ini; hitungan sesi lama tetap tersimpan.</p>
       </section>
     </div>
-  </>
+  </div>
 }
