@@ -37,36 +37,41 @@ export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivi
   const [selectedDate, setSelectedDate] = useState(tanggalHariIni())
   const monthDate = new Date(now.getFullYear(), now.getMonth() + selisihBulan, 1)
   const monthTitle = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(monthDate)
-  const firstWeekday = (monthDate.getDay() + 6) % 7
+  const firstWeekday = monthDate.getDay()
   const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate()
-  const cells = [...Array(firstWeekday).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
+  const cells = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), index - firstWeekday + 1)
+    return { day: date.getDate(), date, inMonth: date.getMonth() === monthDate.getMonth() }
+  })
   const dayDate = (day) => `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-  const events = (day) => {
-    const date = dayDate(day)
-    const weekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date(`${date}T12:00:00`))
+  const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  const events = (date) => {
+    const dateString = typeof date === 'string' ? date : dateKey(date)
+    const weekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date(`${dateString}T12:00:00`))
     const classes = daftarMataPelajaran.flatMap((subject) => (subject.schedule || []).filter((slot) => slot.day === weekday).map((slot) => ({ label: `${slot.start || ''} ${subject.name}`, type: 'event-class' })))
-    return [...daftarTugas.filter((task) => task.deadline === date).map((task) => ({ label: task.title, type: 'event-task' })), ...daftarAktivitas.filter((item) => item.date === date).map((item) => ({ label: item.title || item.text, type: 'event-activity' })), ...classes]
+    return [...daftarTugas.filter((task) => task.deadline === dateString).map((task) => ({ label: task.title, type: 'event-task' })), ...daftarAktivitas.filter((item) => item.date === dateString).map((item) => ({ label: item.title || item.text, type: 'event-activity' })), ...classes]
   }
-  const todayMatches = monthDate.getMonth() === now.getMonth() && monthDate.getFullYear() === now.getFullYear()
   const tanggalTerpilih = selectedDate.startsWith(`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}-`) ? Number(selectedDate.slice(-2)) : null
-  const selectedEvents = tanggalTerpilih ? events(tanggalTerpilih) : []
+  const selectedEvents = tanggalTerpilih ? events(dayDate(tanggalTerpilih)) : []
   return <div className="non-dashboard-page">
     <PengantarHalaman halaman="Kalender" judul="Kalender belajar" deskripsi="Lihat dan atur jadwal kegiatan belajarmu." Ikon={CalendarDays} aksi={<button className="primary-button" onClick={onAdd}><Plus size={18} /><span>Tambah kegiatan</span></button>}/>
     <section className="panel calendar-panel">
       <div className="calendar-header">
-        <button className="icon-button" onClick={() => aturSelisihBulan((offset) => offset - 1)} aria-label="Bulan sebelumnya"><ChevronLeft size={20} /></button>
+        <button className="icon-button calendar-nav" onClick={() => aturSelisihBulan((offset) => offset - 1)} aria-label="Bulan sebelumnya"><ChevronLeft size={20} /></button>
         <h2>{monthTitle}</h2>
-        <button className="icon-button" onClick={() => aturSelisihBulan((offset) => offset + 1)} aria-label="Bulan berikutnya"><ChevronRight size={20} /></button>
-        <button className="subtle-button tanggalHariIni-button" onClick={() => { aturSelisihBulan(0); setSelectedDate(tanggalHariIni()) }}>Hari ini</button>
+        <button className="icon-button calendar-nav" onClick={() => aturSelisihBulan((offset) => offset + 1)} aria-label="Bulan berikutnya"><ChevronRight size={20} /></button>
+        <button className="subtle-button today-button" onClick={() => { aturSelisihBulan(0); setSelectedDate(tanggalHariIni()) }}>Hari ini</button>
       </div>
-      <div className="calendar-grid calendar-weekdays">{['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((day) => <span key={day}>{day}</span>)}</div>
+      <div className="calendar-grid calendar-weekdays">{['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((day) => <span key={day}>{day}</span>)}</div>
       <div className="calendar-grid">
-        {cells.map((day, index) => {
-          const isSelected = day && tanggalTerpilih === day
-          const isToday = day && todayMatches && day === now.getDate()
-          const dayClass = ['calendar-day', isToday && 'is-tanggalHariIni', isSelected && 'is-selected'].filter(Boolean).join(' ')
-          return <button type="button" aria-label={day ? `Pilih ${day} ${monthTitle}` : undefined} aria-pressed={day ? Boolean(isSelected) : undefined} className={dayClass} key={`${day}-${index}`} disabled={!day} onClick={() => day && setSelectedDate(dayDate(day))}>
-            {day && <><span className="day-number">{day}</span>{events(day).slice(0, 2).map((event, eventIndex) => <span key={eventIndex} className={'calendar-event ' + event.type}>{event.label}</span>)}</>}
+        {cells.map(({ day, date, inMonth }, index) => {
+          const dateString = dateKey(date)
+          const isSelected = selectedDate === dateString
+          const isToday = dateString === tanggalHariIni()
+          const dayEvents = events(date)
+          const dayClass = ['calendar-day', !inMonth && 'is-outside-month', isToday && 'is-tanggalHariIni', isSelected && 'is-selected'].filter(Boolean).join(' ')
+          return <button type="button" aria-label={`Pilih ${new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(date)}`} aria-pressed={isSelected} className={dayClass} key={dateString + index} onClick={() => { setSelectedDate(dateString); if (!inMonth) aturSelisihBulan((offset) => offset + (date < monthDate ? -1 : 1)) }}>
+            <span className="day-number">{day}</span><span className="calendar-markers" aria-hidden="true">{dayEvents.slice(0, 3).map((event, eventIndex) => <i key={eventIndex} className={'calendar-marker ' + event.type} />)}</span>
           </button>
         })}
       </div>

@@ -63,6 +63,57 @@
   .non-dashboard-page .empty-copy>span { font-size:13px; }
   .non-dashboard-page .calendar-panel { padding:16px 12px; }
 }
+
+/* Kalender: kotak tanggal yang tetap terbaca pada layar kecil. */
+.non-dashboard-page .calendar-panel { min-width:0; overflow:hidden; }
+.calendar-header { display:grid; grid-template-columns:48px minmax(0,1fr) 48px auto; align-items:center; gap:12px; margin-bottom:22px; }
+.calendar-header h2 { margin:0; text-align:center; color:var(--ink); font:700 clamp(18px,2vw,24px)/1.2 Outfit,'Plus Jakarta Sans',sans-serif; }
+.calendar-header .calendar-nav { width:48px; height:48px; border-radius:14px; color:var(--terra); background:var(--panel); }
+.calendar-header .today-button { min-height:44px; padding-inline:16px; border:1px solid var(--line); border-radius:12px; background:var(--panel); color:var(--ink); }
+.calendar-header .calendar-nav:hover,.calendar-header .today-button:hover { border-color:var(--terra); background:var(--soft); }
+.calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; min-width:0; }
+.calendar-weekdays { margin-bottom:8px; }
+.calendar-weekdays span { display:grid; place-items:center; min-height:34px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.04em; }
+.calendar-day { display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-width:0; min-height:clamp(76px,9vw,112px); padding:12px; border:1px solid var(--line); border-radius:15px; background:var(--panel); color:var(--ink); text-align:left; transition:transform .16s ease,border-color .16s ease,background-color .16s ease,box-shadow .16s ease; }
+.calendar-day:hover:not(:disabled) { transform:translateY(-2px); border-color:var(--terra); box-shadow:0 5px 14px color-mix(in srgb,var(--terra) 12%,transparent); }
+.calendar-day:active:not(:disabled) { transform:scale(.98); }
+.calendar-day:disabled { cursor:default; }
+.calendar-day .day-number { font-size:16px; line-height:1.2; font-weight:600; color:var(--ink); }
+.calendar-day.is-outside-month { background:var(--canvas); }
+.calendar-day.is-outside-month .day-number { color:var(--muted); opacity:.62; }
+.calendar-day.is-tanggalHariIni { border-color:color-mix(in srgb,var(--terra) 55%,var(--line)); }
+.calendar-day.is-tanggalHariIni .day-number { display:grid; place-items:center; width:28px; height:28px; margin:-5px 0 -5px -5px; border-radius:50%; background:var(--terra); color:#fff; }
+.calendar-day.is-selected { background:var(--soft); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--terra) 46%,transparent); }
+.calendar-day.is-selected .day-number { color:var(--terra); font-weight:700; }
+.calendar-day.is-selected.is-tanggalHariIni .day-number { color:#fff; }
+.calendar-markers { display:flex; align-items:center; gap:5px; min-height:8px; }
+.calendar-marker { width:7px; height:7px; border-radius:50%; background:var(--terra); }
+.calendar-marker.event-task { background:#bd654f; }
+.calendar-marker.event-activity { background:#668773; }
+.calendar-marker.event-class { background:#d7a548; }
+.calendar-legend { flex-wrap:wrap; }
+:root[data-theme="dark"] .calendar-day.is-outside-month { background:var(--canvas); }
+:root[data-theme="dark"] .calendar-day.is-selected { background:var(--soft); }
+@media (max-width:800px) {
+  .calendar-header { grid-template-columns:42px minmax(0,1fr) 42px auto; gap:7px; margin-bottom:16px; }
+  .calendar-header .calendar-nav { width:42px; height:42px; }
+  .calendar-header .today-button { min-height:40px; padding-inline:10px; font-size:12px; }
+  .calendar-grid { gap:5px; }
+  .calendar-weekdays span { min-height:30px; font-size:10px; }
+  .calendar-day { min-height:78px; padding:9px 7px; border-radius:12px; }
+  .calendar-day .day-number { font-size:14px; }
+  .calendar-day.is-tanggalHariIni .day-number { width:25px; height:25px; }
+}
+@media (max-width:390px) {
+  .calendar-header { grid-template-columns:38px minmax(0,1fr) 38px; gap:6px; }
+  .calendar-header h2 { font-size:17px; }
+  .calendar-header .calendar-nav { width:38px; height:40px; }
+  .calendar-header .today-button { grid-column:1 / -1; justify-self:center; min-height:36px; }
+  .calendar-grid { gap:4px; }
+  .calendar-weekdays span { font-size:9px; }
+  .calendar-day { min-height:64px; padding:7px 5px; border-radius:10px; }
+  .calendar-day .day-number { font-size:13px; }
+}
 @media (max-width:390px) {
   .page-intro { padding:17px 15px; }
   .page-intro-main { gap:11px; }
