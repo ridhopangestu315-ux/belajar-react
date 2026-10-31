@@ -426,3 +426,34 @@ body { background:var(--canvas); color:var(--ink); font-family:'Plus Jakarta San
 :root[data-theme="dark"] .sidebar-note strong{color:var(--ink)!important}
 :root[data-theme="dark"] .sidebar-note>span{color:var(--muted)!important}
 @media(max-width:800px){.sidebar-note{padding:16px!important}}
+
+/* Tombol tema header yang konsisten di desktop dan mobile */
+.theme-toggle{display:grid!important;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--primary);transition:background-color .2s,color .2s,border-color .2s,transform .15s}
+.theme-toggle:hover{background:var(--accent-soft);border-color:color-mix(in srgb,var(--primary) 40%,var(--line));color:var(--primary);transform:translateY(-1px)}
+.theme-toggle:active{transform:scale(.96)}
+@media(max-width:800px){
+  .topbar{padding-inline:12px;gap:7px}
+  .mobile-brand{gap:6px;font-size:14px;flex:0 0 auto}
+  .mobile-brand .brand-mark{width:29px;height:29px}
+  .topbar-actions{gap:5px;min-width:0}
+  .today-pill{display:flex;flex:0 1 auto;min-width:0;height:34px;padding:0 6px;gap:4px;font-size:9px;white-space:nowrap}
+  .today-pill svg{width:14px;height:14px;flex:none}
+  .theme-toggle{visibility:visible;pointer-events:auto;width:36px;height:36px;flex-basis:36px}
+  .notification-button{width:34px;height:34px;flex:0 0 34px}
+  .avatar-small.avatar-trigger{width:36px;height:36px;flex-basis:36px}
+}
+@media(max-width:390px){
+  .topbar{padding-inline:8px;gap:5px}
+  .mobile-menu{width:32px;height:32px;flex:0 0 32px}
+  .mobile-brand{gap:4px;font-size:12px}
+  .mobile-brand .brand-mark{width:26px;height:26px}
+  .topbar-actions{gap:3px}
+  .today-pill{height:32px;padding:0 4px;gap:3px;font-size:8px}
+  .today-pill svg{width:12px;height:12px}
+  .theme-toggle{width:32px;height:32px;flex-basis:32px}
+  .theme-toggle svg{width:16px;height:16px}
+  .notification-button{width:30px;height:32px;flex-basis:30px}
+  .notification-button svg{width:17px;height:17px}
+  .avatar-small.avatar-trigger{width:32px;height:32px;flex-basis:32px}
+}
+@media(max-width:350px){.mobile-brand{font-size:11px}.mobile-brand .brand-mark{width:24px;height:24px}.today-pill{font-size:7px}}
