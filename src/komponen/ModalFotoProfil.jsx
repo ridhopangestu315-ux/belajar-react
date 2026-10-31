@@ -4,13 +4,13 @@ import { ImagePlus, Trash2, Upload, X } from 'lucide-react'
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-export default function ProfilePhotoModal({ name, photo = '', onClose, onSave }) {
+export default function ModalFotoProfil({ name, photo = '', onClose, onSave }) {
   const fileInput = useRef(null)
   const [preview, setPreview] = useState(photo)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  function readPhoto(file) {
+  function bacaFoto(file) {
     setError('')
     if (!file) return
     const extension = file.name.split('.').pop()?.toLowerCase()
@@ -51,7 +51,7 @@ export default function ProfilePhotoModal({ name, photo = '', onClose, onSave })
       <div className="profile-modal-actions">
         <button className="secondary-button" type="button" onClick={() => fileInput.current?.click()} disabled={busy}><Upload size={16}/>{preview ? 'Ganti foto' : 'Unggah foto'}</button>
         {preview && <button className="subtle-button" type="button" onClick={() => { setPreview(''); setError('') }}><Trash2 size={16}/>Hapus</button>}
-        <input ref={fileInput} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden onChange={(event) => { readPhoto(event.target.files?.[0]); event.target.value = '' }}/>
+        <input ref={fileInput} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden onChange={(event) => { bacaFoto(event.target.files?.[0]); event.target.value = '' }}/>
       </div>
       <p className="profile-file-hint"><ImagePlus size={14}/> JPG, PNG, atau WEBP · Maksimal 5 MB</p>
       <div className="profile-modal-footer"><button className="secondary-button" onClick={onClose}>Batal</button><button className="primary-button" disabled={busy} onClick={() => onSave(preview)}>{busy ? 'Memproses…' : 'Simpan foto'}</button></div>
