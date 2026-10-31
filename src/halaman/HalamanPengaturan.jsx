@@ -1,14 +1,10 @@
 import { Settings2, Sparkles, Trash2 } from 'lucide-react'
 import PengantarHalaman from '../komponen/PengantarHalaman.jsx'
 
-export function HalamanPengaturan({ pengaturan, aturPengaturan, onReset }) {
-  const defaults = { name:'', educationLevel:'', classLevel:'', institution:'', theme:'light', focusMinutes:25, shortBreak:5, longBreak:15 }
+export function HalamanPengaturan({ pengaturan, aturPengaturan, onRestore, onReset }) {
   const educationOptions = ['SMP', 'SMA', 'SMK', 'Perguruan Tinggi', 'Belajar Mandiri', 'Lainnya']
   function ubahPengaturan(name, value) {
     aturPengaturan((current) => ({ ...current, [name]: value }))
-  }
-  function aturUlangPengaturan() {
-    aturPengaturan(defaults)
   }
   return <div className="non-dashboard-page">
     <PengantarHalaman halaman="Pengaturan" judul="Pengaturan" deskripsi="Sesuaikan aplikasi dan informasi profil sesuai kebutuhanmu." Ikon={Settings2}/>
@@ -27,7 +23,7 @@ export function HalamanPengaturan({ pengaturan, aturPengaturan, onReset }) {
           <label className="field-label">Istirahat panjang<input className="form-control" type="number" min="1" max="60" value={pengaturan.longBreak} onChange={(event) => ubahPengaturan('longBreak', Math.max(1, Number(event.target.value)))} /></label>
         </div>
         <h2>Data aplikasi</h2><p className="muted">Data belajar dan pengaturan tersimpan di browser ini.</p>
-        <div className="settings-buttons"><button className="secondary-button" onClick={aturUlangPengaturan}>Kembalikan pengaturan default</button><button className="danger-button" onClick={onReset}><Trash2 size={17} />Hapus semua data</button></div>
+        <div className="settings-buttons"><button className="secondary-button" onClick={onRestore}>Kembalikan pengaturan default</button><button className="danger-button" onClick={onReset}><Trash2 size={17} />Hapus semua data</button></div>
       </section>
       <aside className="panel settings-tip"><span className="focus-side-icon"><Sparkles size={20} /></span><h2>Belajar dengan caramu</h2><p>Informasi jenjang dan institusi bersifat opsional. StudyFlow tetap bisa digunakan untuk belajar mandiri.</p></aside>
     </div>

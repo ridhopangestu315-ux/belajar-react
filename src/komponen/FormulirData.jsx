@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import { ubahKeKunciTanggalLokal as tanggalHariIni } from '../fungsi-bantuan/tanggal.js'
 
-export function FormulirData({ modal, daftarMataPelajaran, onClose, onSave }) {
+export function FormulirData({ modal, daftarMataPelajaran, tampilkanNotifikasi, onClose, onSave }) {
   const { page, item } = modal
   const isSubject = page === 'Mata Pelajaran'
   const isTask = page === 'Tugas'
@@ -13,7 +13,7 @@ export function FormulirData({ modal, daftarMataPelajaran, onClose, onSave }) {
     const form = new FormData(event.currentTarget)
     const value = (key) => String(form.get(key) || '').trim()
     if (isSubject && value('day') && (!value('start') || !value('end') || value('start') >= value('end'))) {
-      window.alert('Isi waktu mulai dan selesai yang valid untuk jadwal belajar.')
+      tampilkanNotifikasi('Isi waktu mulai dan selesai yang valid untuk jadwal belajar.', 'error')
       return
     }
     if (isSubject) onSave({ name: value('name'), code: value('code'), teacher: value('teacher'), category: value('category'), level: value('level'), description: value('description'), color: value('color'), schedule: value('day') ? [{ day: value('day'), start: value('start'), end: value('end'), room: value('room') }] : [] })

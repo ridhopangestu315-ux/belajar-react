@@ -4,6 +4,7 @@ import './gaya/variabel.css'
 import './gaya/dasar.css'
 import './gaya/aplikasi.css'
 import './gaya/halaman.css'
+import './gaya/notifikasi.css'
 import Aplikasi from './Aplikasi.jsx'
 
 createRoot(document.getElementById('root')).render(

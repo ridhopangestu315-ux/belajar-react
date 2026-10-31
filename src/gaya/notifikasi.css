@@ -1,0 +1,53 @@
+.studyflow-toast {
+  position: fixed;
+  z-index: 150;
+  top: 84px;
+  right: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: min(410px, calc(100vw - 32px));
+  padding: 15px 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px #50321b18;
+}
+.studyflow-toast-copy { flex: 1; min-width: 0; }
+.studyflow-toast-copy strong { display: block; margin: 1px 0 4px; font-size: 13px; }
+.studyflow-toast-copy p { margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+.studyflow-alert-icon, .studyflow-confirm-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 12px; }
+.studyflow-toast-success .studyflow-alert-icon, .studyflow-toast-success.studyflow-confirm-icon { color: #287553; background: #e6f4ec; }
+.studyflow-toast-error .studyflow-alert-icon, .studyflow-toast-error.studyflow-confirm-icon { color: #b33c35; background: #fae9e6; }
+.studyflow-toast-warning .studyflow-alert-icon, .studyflow-toast-warning.studyflow-confirm-icon { color: #a65d16; background: #fff1d8; }
+.studyflow-toast-information .studyflow-alert-icon, .studyflow-toast-information.studyflow-confirm-icon { color: var(--primary-strong); background: var(--accent-soft); }
+.studyflow-alert-close { display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 30px; color: var(--text-muted); background: transparent; border: 0; border-radius: 9px; cursor: pointer; transition: background-color .18s ease, color .18s ease, transform .12s ease; }
+.studyflow-alert-close:hover { color: var(--text); background: var(--background); }
+.studyflow-alert-close:active { transform: scale(.94); }
+.studyflow-confirm-overlay { position: fixed; z-index: 200; inset: 0; display: grid; place-items: center; padding: 20px; background: #211a17a6; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); animation: studyflow-overlay-in .18s ease both; }
+.studyflow-confirm-dialog { width: min(430px, 100%); padding: 24px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 24px 70px #0003; animation: studyflow-dialog-in .2s ease both; }
+.studyflow-confirm-dialog h2 { margin: 16px 0 7px; font-size: 19px; line-height: 1.3; }
+.studyflow-confirm-dialog > p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.65; }
+.studyflow-confirm-phrase { display: grid; gap: 8px; margin-top: 17px; color: var(--text-muted); font-size: 12px; }
+.studyflow-confirm-phrase strong { color: var(--text); font-weight: 700; }
+.studyflow-confirm-phrase input { width: 100%; min-height: 42px; padding: 0 12px; color: var(--text); background: var(--background); border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 13px; letter-spacing: .03em; outline: none; transition: border-color .18s ease, box-shadow .18s ease; }
+.studyflow-confirm-phrase input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent); }
+.studyflow-confirm-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 24px; }
+.studyflow-confirm-accept { min-height: 40px; padding: 0 15px; color: #fff; background: var(--primary); border: 1px solid var(--primary); border-radius: 11px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: background-color .18s ease, transform .12s ease; }
+.studyflow-confirm-accept:hover { background: var(--primary-strong); }
+.studyflow-confirm-accept:active { transform: scale(.97); }
+.studyflow-confirm-accept:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+:root[data-theme="dark"] .studyflow-toast { box-shadow: 0 12px 32px #0005; }
+:root[data-theme="dark"] .studyflow-toast-success .studyflow-alert-icon, :root[data-theme="dark"] .studyflow-toast-success.studyflow-confirm-icon { color: #9bd2af; background: #263b30; }
+:root[data-theme="dark"] .studyflow-toast-error .studyflow-alert-icon, :root[data-theme="dark"] .studyflow-toast-error.studyflow-confirm-icon { color: #f0aaa1; background: #432c29; }
+:root[data-theme="dark"] .studyflow-toast-warning .studyflow-alert-icon, :root[data-theme="dark"] .studyflow-toast-warning.studyflow-confirm-icon { color: #ecc17e; background: #403526; }
+@keyframes studyflow-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes studyflow-dialog-in { from { opacity: 0; transform: translateY(5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 600px) {
+  .studyflow-toast { top: 80px; right: 12px; left: 12px; width: auto; }
+  .studyflow-confirm-dialog { padding: 21px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studyflow-confirm-overlay, .studyflow-confirm-dialog { animation: none; }
+}
