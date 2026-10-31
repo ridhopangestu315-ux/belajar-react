@@ -1,0 +1,182 @@
+/* Warna aksen lintas halaman mengikuti referensi StudyFlow. */
+:root {
+  --surface-hover: #FFF5EB;
+  --primary-border: #E8DDD7;
+  --soft: #FFF5EB;
+  --accent-soft: #FDE9E0;
+}
+
+.brand-mark { background: linear-gradient(140deg, #8B1E0F, #6F160B); box-shadow: 0 5px 12px #8B1E0F30; }
+.topbar, .topbar .theme-toggle, .topbar .icon-button, .mobile-bottom-nav { background: var(--surface); border-color: var(--border); }
+.topbar .today-pill { background: var(--background-soft); border-color: var(--border); color: var(--text-muted); }
+.mobile-nav-item:hover, .mobile-nav-item.active { background: var(--primary-soft); color: var(--primary); }
+.focus-nav-item .mobile-nav-icon, .focus-nav-item.active .mobile-nav-icon { background: var(--primary); color: var(--surface); }
+.hero-banner { background: linear-gradient(120deg, #6F160B 0%, #8B1E0F 55%, #6F2A1D 100%); box-shadow: 0 12px 28px #8B1E0F30; }
+.hero-primary { background: var(--surface); color: var(--primary); }
+.hero-primary:hover { background: var(--background-soft); }
+.hero-secondary { color: var(--surface); }
+.hero-banner h1 { color: var(--surface); }
+.hero-banner > p { color: #FDE9E0; }
+.hero-banner > p strong { color: var(--surface); }
+.hero-kicker i { background: #FDE9E0; }
+.class-bar, .subject-card { --subject-color: var(--primary); }
+.class-row .class-bar { background: var(--primary) !important; }
+.stat-icon.terracotta, .stat-icon.mint, .stat-icon.amber, .stat-icon.aqua { background: var(--primary-soft); color: var(--primary); }
+.topbar .notification-button i { background: var(--primary); }
+.online-dot { background: var(--primary); }
+.mobile-nav-item:focus-visible { outline-color: var(--primary); }
+.timer-notice { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.timer-notice > svg { color: var(--primary); }
+.timer-notice button { color: var(--text-muted); }
+.brand-accent, .text-button, .note-label, .page-intro-action .primary-button { color: var(--primary); }
+.nav-link, .breadcrumb, .eyebrow, .nav-caption, .today-pill, .icon-button,
+.progress-legend p, .task-main > span, .record-body > span, .class-row div span,
+.activity-row div span, .calendar-weekdays span, .calendar-legend span,
+.timer-circle > span, .timer-circle small, .timer-caption, .focus-side > p,
+.focus-step small, .activity-summary p, .activity-bars small, .field-label,
+.stat-title, .stat-hint, .empty-state { color: var(--text-muted); }
+.nav-link:hover { background: var(--background-soft); color: var(--text); }
+.nav-link.active, .focus-tabs button.selected { background: var(--primary-soft); color: var(--primary); }
+.sidebar-note { background: var(--background-soft); border-color: var(--border); color: var(--text); }
+.sidebar-note > span, .muted { color: var(--text-muted); }
+.note-icon, .avatar, .stat-icon.purple, .focus-side-icon, .activity-mark,
+.soft-message, .focus-quote, .event-task { background: var(--primary-soft); color: var(--primary); }
+.stat-icon.blue, .stat-icon.green, .stat-icon.orange, .blue-dot, .green-dot,
+.event-activity, .event-class { background: var(--background-soft); color: var(--primary-hover); }
+.primary-button, .page-intro-action .primary-button { background: var(--primary); color: var(--surface); box-shadow: 0 4px 9px #8B1E0F30; }
+.primary-button:hover, .page-intro-action .primary-button:hover { background: var(--primary-hover); }
+.progress-ring { background: conic-gradient(var(--primary) var(--progress), var(--border) 0); }
+.purple-dot, .is-today .day-number, .big-progress-bar span { background: var(--primary); }
+.timer-circle { background: conic-gradient(var(--primary) 0 68%, var(--border) 68%); }
+.timer-circle:before { background: var(--surface); }
+.timer-circle strong, .summary-number { color: var(--primary); }
+.big-progress-bar { background: var(--border); }
+.activity-bars span, .class-bar { background: var(--primary); }
+.priority, .priority-tinggi, .priority-sedang, .priority-rendah { background: var(--primary-soft); color: var(--primary-hover); }
+.deadline-late, .deadline-soon { color: var(--primary) !important; }
+.task-done .check-button { color: var(--primary); }
+.task-done .task-main strong { color: var(--text-faint); }
+.danger-button, .delete-button:hover, .pembaca-catatan-hapus { background: var(--primary-soft); color: var(--primary); border-color: var(--border); }
+.page-intro { background: var(--background-soft); border-color: var(--border); }
+.page-intro-breadcrumb, .page-intro-copy p { color: var(--text-muted); }
+.page-intro-icon, .empty-mark { background: var(--primary-soft); color: var(--primary); }
+.page-intro-copy h1 { color: var(--text); }
+.non-dashboard-page .panel, .non-dashboard-page .subject-card, .non-dashboard-page .note-card,
+.non-dashboard-page .search-box, .non-dashboard-page .select-control { background: var(--surface); border-color: var(--border); }
+.non-dashboard-page .search-box input { color: var(--text); }
+.non-dashboard-page .empty-copy p { color: var(--text); }
+.non-dashboard-page .empty-copy > span { color: var(--text-muted); }
+.non-dashboard-page .empty-action { color: var(--primary); }
+.studyflow-toast-success .studyflow-alert-icon, .studyflow-toast-success.studyflow-confirm-icon,
+.studyflow-toast-error .studyflow-alert-icon, .studyflow-toast-error.studyflow-confirm-icon,
+.studyflow-toast-warning .studyflow-alert-icon, .studyflow-toast-warning.studyflow-confirm-icon { color: var(--primary); background: var(--primary-soft); }
+.studyflow-toast-information .studyflow-alert-icon, .studyflow-toast-information.studyflow-confirm-icon { color: var(--primary); background: var(--primary-soft); }
+.studyflow-confirm-overlay, .modal-backdrop { background: color-mix(in srgb, #1E1A18 58%, transparent); }
+.studyflow-confirm-dialog, .modal-card, .studyflow-toast { border-color: var(--border); }
+.focus-visible, :focus-visible, .note-card-clickable:focus-visible { outline-color: var(--primary); }
+
+:root[data-theme="dark"] {
+  --soft: #382720;
+  --accent-soft: #382720;
+}
+:root[data-theme="dark"] .topbar, :root[data-theme="dark"] .topbar .theme-toggle,
+:root[data-theme="dark"] .topbar .icon-button, :root[data-theme="dark"] .mobile-bottom-nav { background: var(--surface); border-color: var(--border); }
+:root[data-theme="dark"] .hero-banner { background: linear-gradient(120deg, #40130E 0%, #6F1B12 55%, #4A211B 100%); }
+:root[data-theme="dark"] .hero-primary { color: #6F160B; background: #FFF8F3; }
+:root[data-theme="dark"] .nav-link.active, :root[data-theme="dark"] .mobile-nav-item.active { background: #FCE9E1; color: #6F160B; box-shadow: inset 3px 0 #A52A12; }
+:root[data-theme="dark"] .mobile-nav-item:hover { background: #382720; color: #F3E7DF; }
+:root[data-theme="dark"] .focus-nav-item .mobile-nav-icon, :root[data-theme="dark"] .focus-nav-item.active .mobile-nav-icon { background: #A52A12; color: #FFFFFF; }
+:root[data-theme="dark"] .nav-link, :root[data-theme="dark"] .sidebar-note,
+:root[data-theme="dark"] .sidebar-note strong, :root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .topbar .icon-button, :root[data-theme="dark"] .topbar .theme-toggle { color: #F3E7DF; }
+:root[data-theme="dark"] .nav-caption, :root[data-theme="dark"] .breadcrumb,
+:root[data-theme="dark"] .today-pill, :root[data-theme="dark"] .sidebar-note > span { color: #A99589; }
+:root[data-theme="dark"] .brand-mark { background: #FCE9E1; color: #A52A12; }
+:root[data-theme="dark"] .brand-accent, :root[data-theme="dark"] .text-button,
+:root[data-theme="dark"] .note-label, :root[data-theme="dark"] .card-link { color: #C43B18; }
+:root[data-theme="dark"] :is(h1,h2,h3,h4,.stat-value,.task-title,.class-row strong,.activity-row strong,.panel-heading,.modal-title,.card-title,.page-intro-copy h1,.empty-copy p,.subject-card h3,.note-card h3) { color: #FFF8F3; }
+:root[data-theme="dark"] :is(.eyebrow,.muted,.stat-title,.stat-hint,.panel-subtitle,.task-meta,.class-row div span,.activity-row div span,.progress-legend p,.calendar-weekdays span,.calendar-legend span,.timer-caption,.focus-side > p,.focus-step small,.activity-summary p,.activity-bars small,.field-label,.record-body p,.record-date,.subject-card > p,.note-card > p,.subject-schedule span,.non-dashboard-page .empty-copy > span) { color: #A99589; }
+:root[data-theme="dark"] .hero-banner { box-shadow: 0 12px 28px #A52A1238; }
+:root[data-theme="dark"] .hero-banner h1, :root[data-theme="dark"] .hero-banner > p,
+:root[data-theme="dark"] .hero-banner > p strong, :root[data-theme="dark"] .hero-kicker { color: #FFF8F3; }
+:root[data-theme="dark"] .hero-kicker i { background: #FBBF24; }
+:root[data-theme="dark"] .hero-primary { color: #6F160B; }
+:root[data-theme="dark"] .progress-ring { background: conic-gradient(#A52A12 var(--progress), #49332B 0); }
+:root[data-theme="dark"] .timer-circle { background: conic-gradient(#A52A12 0 68%, #49332B 68%); }
+:root[data-theme="dark"] .big-progress-bar { background: #49332B; }
+:root[data-theme="dark"] .is-today .day-number, :root[data-theme="dark"] .big-progress-bar span,
+:root[data-theme="dark"] .activity-bars span { background: #A52A12; }
+:root[data-theme="dark"] .focus-tabs button.selected { color: #6F160B; background: #FCE9E1; }
+:root[data-theme="dark"] .task-row:hover, :root[data-theme="dark"] .activity-row:hover { background: #382720; }
+:root[data-theme="dark"] .stat-icon.terracotta, :root[data-theme="dark"] .stat-icon.purple { color: #A52A12; background: #FCE9E1; }
+:root[data-theme="dark"] .stat-icon.mint, :root[data-theme="dark"] .stat-icon.green { color: #065F46; background: #D1FAE5; }
+:root[data-theme="dark"] .stat-icon.amber, :root[data-theme="dark"] .stat-icon.orange { color: #92400E; background: #FEF3C7; }
+:root[data-theme="dark"] .stat-icon.aqua, :root[data-theme="dark"] .stat-icon.blue { color: #0F766E; background: #CCFBF1; }
+:root[data-theme="dark"] .priority-tinggi { color: #FCA5A5; background: #482321; }
+:root[data-theme="dark"] .priority-sedang { color: #FCD34D; background: #49391D; }
+:root[data-theme="dark"] .priority-rendah { color: #6EE7B7; background: #153C31; }
+:root[data-theme="dark"] .deadline-late { color: #F87171 !important; }
+:root[data-theme="dark"] .deadline-soon { color: #FBBF24 !important; }
+:root[data-theme="dark"] .task-done .check-button, :root[data-theme="dark"] .activity-mark { color: #34D399; }
+:root[data-theme="dark"] .activity-mark { background: #153C31; }
+:root[data-theme="dark"] input, :root[data-theme="dark"] textarea, :root[data-theme="dark"] select,
+:root[data-theme="dark"] .form-control, :root[data-theme="dark"] .form-input,
+:root[data-theme="dark"] .form-select, :root[data-theme="dark"] .form-textarea,
+:root[data-theme="dark"] .search-box { color: #F3E7DF; background-color: #211815; border-color: #49332B; }
+:root[data-theme="dark"] input::placeholder, :root[data-theme="dark"] textarea::placeholder,
+:root[data-theme="dark"] .search-box input::placeholder { color: #A99589; opacity: 1; }
+:root[data-theme="dark"] select option { color: #F3E7DF; background: #2D211D; }
+:root[data-theme="dark"] :focus-visible { outline-color: #C43B18; }
+:root[data-theme="dark"] ::selection { color: #FFF8F3; background: #A52A12; }
+:root[data-theme="dark"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+:root[data-theme="dark"] ::-webkit-scrollbar-track { background: #17110F; }
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #49332B; border: 2px solid #17110F; border-radius: 999px; }
+:root[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #62463B; }
+:root[data-theme="dark"] .studyflow-toast { background: #2D211D; color: #F3E7DF; border-color: #49332B; }
+:root[data-theme="dark"] .studyflow-toast-success .studyflow-alert-icon { color: #6EE7B7; background: #153C31; }
+:root[data-theme="dark"] .studyflow-toast-warning .studyflow-alert-icon { color: #FCD34D; background: #49391D; }
+:root[data-theme="dark"] .studyflow-toast-error .studyflow-alert-icon { color: #FCA5A5; background: #482321; }
+:root[data-theme="dark"] .studyflow-toast-information .studyflow-alert-icon { color: #F3E7DF; background: #382720; }
+:root[data-theme="dark"] .studyflow-confirm-overlay, :root[data-theme="dark"] .modal-backdrop { background: #100B09B8; }
+:root[data-theme="dark"] .timer-notice { background: #2D211D; color: #F3E7DF; border-color: #49332B; }
+:root[data-theme="dark"] .timer-notice > svg { color: #34D399; }
+:root[data-theme="dark"] .online-dot { background: #34D399; }
+:root[data-theme="dark"] :is(.panel,.stat-card,.subject-card,.note-card,.modal-card,.studyflow-confirm-dialog,.sidebar-note,.page-intro,.settings-tip) :is(p,span,small,label,time) { color: #C9B6AA; }
+:root[data-theme="dark"] .stat-title, :root[data-theme="dark"] .stat-hint,
+:root[data-theme="dark"] .eyebrow, :root[data-theme="dark"] .card-label,
+:root[data-theme="dark"] .page-intro-breadcrumb { color: #A99589; }
+:root[data-theme="dark"] .event-activity { color: #6EE7B7; background: #153C31; }
+:root[data-theme="dark"] .event-class { color: #5EEAD4; background: #153B3A; }
+:root[data-theme="dark"] .activity-mark { color: #6EE7B7; background: #153C31; }
+:root[data-theme="dark"] .studyflow-toast-success.studyflow-confirm-icon { color: #6EE7B7; background: #153C31; }
+:root[data-theme="dark"] .studyflow-toast-warning.studyflow-confirm-icon { color: #FCD34D; background: #49391D; }
+:root[data-theme="dark"] .studyflow-toast-error.studyflow-confirm-icon { color: #FCA5A5; background: #482321; }
+:root[data-theme="dark"] .page-intro-action .primary-button,
+:root[data-theme="dark"] .page-intro-action .primary-button span { color: #FFF8F3; }
+:root[data-theme="dark"] .is-today .day-number { color: #FFF8F3; }
+:root[data-theme="dark"] .focus-step > span { color: #C43B18; }
+:root[data-theme="dark"] .timer-notice { background: var(--surface); color: var(--text); border-color: var(--border); }
+:root[data-theme="dark"] .page-intro { background: #332923; border-color: var(--border); }
+:root[data-theme="dark"] .page-intro-icon, :root[data-theme="dark"] .empty-mark,
+:root[data-theme="dark"] .note-icon, :root[data-theme="dark"] .avatar,
+:root[data-theme="dark"] .stat-icon, :root[data-theme="dark"] .focus-side-icon,
+:root[data-theme="dark"] .activity-mark, :root[data-theme="dark"] .soft-message,
+:root[data-theme="dark"] .focus-quote, :root[data-theme="dark"] .event-task,
+:root[data-theme="dark"] .event-activity, :root[data-theme="dark"] .event-class,
+:root[data-theme="dark"] .priority, :root[data-theme="dark"] .danger-button,
+:root[data-theme="dark"] .delete-button:hover { background: #382823; color: #E09A83; border-color: var(--border); }
+:root[data-theme="dark"] .non-dashboard-page .panel,
+:root[data-theme="dark"] .non-dashboard-page .subject-card,
+:root[data-theme="dark"] .non-dashboard-page .note-card,
+:root[data-theme="dark"] .non-dashboard-page .search-box,
+:root[data-theme="dark"] .non-dashboard-page .select-control { background: var(--surface); border-color: var(--border); }
+:root[data-theme="dark"] .non-dashboard-page .search-box input { color: var(--text); }
+:root[data-theme="dark"] .non-dashboard-page .empty-copy p { color: var(--text); }
+:root[data-theme="dark"] .non-dashboard-page .empty-copy > span { color: var(--text-muted); }
+:root[data-theme="dark"] .studyflow-toast-success .studyflow-alert-icon,
+:root[data-theme="dark"] .studyflow-toast-success.studyflow-confirm-icon,
+:root[data-theme="dark"] .studyflow-toast-error .studyflow-alert-icon,
+:root[data-theme="dark"] .studyflow-toast-error.studyflow-confirm-icon,
+:root[data-theme="dark"] .studyflow-toast-warning .studyflow-alert-icon,
+:root[data-theme="dark"] .studyflow-toast-warning.studyflow-confirm-icon { color: #E09A83; background: #382823; }
+:root[data-theme="dark"] .pembaca-catatan-hapus { color: #E09A83; background: #382823; border-color: var(--border); }
