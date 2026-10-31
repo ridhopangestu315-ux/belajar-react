@@ -12,36 +12,30 @@ import ModalFotoProfil from './komponen/ModalFotoProfil.jsx'
 import PusatPemberitahuan from './komponen/PusatPemberitahuan.jsx'
 import { HalamanKalender, HalamanData } from './halaman/HalamanPerencanaan.jsx'
 import { usePenyimpananLokal } from './kait/usePenyimpananLokal.js'
-import { tambahHariLokal, ubahKeKunciTanggalLokal } from './fungsi-bantuan/tanggal.js'
+import { ubahKeKunciTanggalLokal } from './fungsi-bantuan/tanggal.js'
 
 const logoStudyFlow = `${import.meta.env.BASE_URL}assets/logo-studyflow.png`
 
 const tanggalHariIni = () => ubahKeKunciTanggalLokal()
-const tanggalSetelah = (days) => ubahKeKunciTanggalLokal(tambahHariLokal(new Date(), days))
 const buatId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 const pageToData = { 'Mata Pelajaran': 'subjects', Tugas: 'tasks', Catatan: 'notes', Pengingat: 'reminders' }
-const todayWeekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date())
-const sampleSubjects = [
-  { id:'sample-subject-1', name:'Matematika', category:'Eksakta', teacher:'', level:'', description:'', code:'', color:'#D5735B', schedule:[{ day:todayWeekday, start:'16:00', end:'16:45', room:'' }] },
-  { id:'sample-subject-2', name:'Bahasa Indonesia', category:'Bahasa', teacher:'', level:'', description:'', code:'', color:'#4D7260', schedule:[] },
-  { id:'sample-subject-3', name:'Bahasa Inggris', category:'Bahasa', teacher:'', level:'', description:'', code:'', color:'#D49A43', schedule:[] },
-  { id:'sample-subject-4', name:'IPA', category:'Sains', teacher:'', level:'', description:'', code:'', color:'#5476A8', schedule:[] },
-  { id:'sample-subject-5', name:'IPS', category:'Sosial', teacher:'', level:'', description:'', code:'', color:'#8A6B9A', schedule:[] },
-  { id:'sample-subject-6', name:'Informatika', category:'Teknologi', teacher:'', level:'', description:'', code:'', color:'#D49A43', schedule:[] },
-  { id:'sample-subject-7', name:'Sejarah', category:'Humaniora', teacher:'', level:'', description:'', code:'', color:'#4D7260', schedule:[] },
-]
-const sampleTasks = [
-  { id:'sample-task-1', title:'Mengerjakan latihan matematika', description:'Selesaikan latihan pecahan dan periksa kembali jawaban.', subject:sampleSubjects[0].name, deadline:tanggalSetelah(1), priority:'Tinggi', status:'Belum dikerjakan', done:false },
-  { id:'sample-task-2', title:'Membuat rangkuman IPA', description:'Catat pokok materi dan istilah penting dengan bahasamu sendiri.', subject:sampleSubjects[3].name, deadline:tanggalSetelah(3), priority:'Sedang', status:'Sedang dikerjakan', done:false },
-  { id:'sample-task-3', title:'Membaca materi Bahasa Indonesia', description:'Baca satu bab dan tulis hal penting yang kamu pelajari.', subject:sampleSubjects[1].name, deadline:tanggalSetelah(5), priority:'Rendah', status:'Selesai', done:true },
-  { id:'sample-task-4', title:'Belajar untuk ujian Bahasa Inggris', description:'Ulangi kosakata dan kerjakan soal latihan.', subject:sampleSubjects[2].name, deadline:tanggalSetelah(6), priority:'Sedang', status:'Belum dikerjakan', done:false },
-]
-const sampleActivities = [{ id:'sample-activity-1', text:'Menambahkan rencana belajar minggu ini', date:tanggalHariIni() }, { id:'sample-activity-2', text:'Membaca materi Bahasa Indonesia', date:tanggalHariIni() }]
-const sampleNotes = [{ id:'sample-note-1', title:'Catatan belajar minggu ini', description:'Tuliskan hal penting yang sudah dipelajari dan pertanyaan yang ingin dibahas.', subject:sampleSubjects[1].name, createdAt:tanggalHariIni() }]
-const sampleReminders = [{ id:'sample-reminder-1', title:'Belajar untuk ujian', description:'Siapkan materi dan latihan yang ingin diulang.', date:tanggalSetelah(2), time:'16:00', done:false }]
+
+const kunciKoleksiBelajar = ['studyflow_tasks', 'studyflow_subjects', 'studyflow_courses', 'studyflow_notes', 'studyflow_reminders', 'studyflow_activities', 'studyflow_focus_history']
+
+function bersihkanDataContohTersimpan() {
+  kunciKoleksiBelajar.forEach((kunci) => {
+    try {
+      const nilai = JSON.parse(localStorage.getItem(kunci) || '[]')
+      if (!Array.isArray(nilai)) return
+      const dataTanpaContoh = nilai.filter((item) => !String(item?.id || '').startsWith('sample-'))
+      if (dataTanpaContoh.length !== nilai.length) localStorage.setItem(kunci, JSON.stringify(dataTanpaContoh))
+    } catch { /* Data yang tidak valid akan ditangani oleh pengait penyimpanan. */ }
+  })
+}
 
 function migrasikanDataBelajar() {
   try {
+    bersihkanDataContohTersimpan()
     if (localStorage.getItem('studyflow_universal_v1')) return
     const uraiDaftar = (key) => {
       try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : [] } catch { return [] }
@@ -68,20 +62,10 @@ function migrasikanDataBelajar() {
     const daftarMataPelajaran = [...currentSubjects, ...oldCourses].map(rapikanMataPelajaran)
     const uniqueSubjects = daftarMataPelajaran.filter((subject, index, list) => list.findIndex((item) => (item.id && item.id === subject.id) || item.name?.toLowerCase() === subject.name?.toLowerCase()) === index)
     const existingTasks = uraiDaftar('studyflow_tasks')
-    const existingNotes = uraiDaftar('studyflow_notes')
-    const existingReminders = uraiDaftar('studyflow_reminders')
-    const existingActivities = uraiDaftar('studyflow_activities')
-    const hasLearningData = uniqueSubjects.length + existingTasks.length + existingNotes.length + existingReminders.length + existingActivities.length > 0
-    if (!hasLearningData) {
-      localStorage.setItem('studyflow_subjects', JSON.stringify(sampleSubjects))
-      localStorage.setItem('studyflow_tasks', JSON.stringify(sampleTasks))
-      localStorage.setItem('studyflow_notes', JSON.stringify(sampleNotes))
-      localStorage.setItem('studyflow_reminders', JSON.stringify(sampleReminders))
-      localStorage.setItem('studyflow_activities', JSON.stringify(sampleActivities))
-    } else if (uniqueSubjects.length) {
+    if (uniqueSubjects.length) {
       localStorage.setItem('studyflow_subjects', JSON.stringify(uniqueSubjects))
     }
-    localStorage.hapusData('studyflow_courses')
+    localStorage.removeItem('studyflow_courses')
 
     const normalizedTasks = existingTasks.map((task) => {
       const linkedSubject = uniqueSubjects.find((subject) => subject.id === task.courseId || subject.name === task.courseName)
@@ -95,7 +79,7 @@ function migrasikanDataBelajar() {
       const done = task.done ?? completed ?? false
       return { ...data, subject: task.subject || courseName || linkedSubject?.name || '', deadline: task.deadline || dueDate || '', time: task.time || dueTime || '', description, done, status: task.status || (done ? 'Selesai' : 'Belum dikerjakan') }
     })
-    if (hasLearningData && existingTasks.length) localStorage.setItem('studyflow_tasks', JSON.stringify(normalizedTasks))
+    if (existingTasks.length) localStorage.setItem('studyflow_tasks', JSON.stringify(normalizedTasks))
     const pengaturan = localStorage.getItem('studyflow_settings')
     if (pengaturan) {
       try { localStorage.setItem('studyflow_settings', JSON.stringify({ educationLevel:'', classLevel:'', institution:'', ...JSON.parse(pengaturan) })) } catch { /* Biarkan pengait memakai nilai awal jika data pengaturan rusak. */ }
@@ -110,11 +94,11 @@ function Aplikasi() {
   const [halamanAktif, aturHalamanAktif] = useState('Dashboard')
   const [apakahBilahSampingTerbuka, aturBilahSamping] = useState(false)
   const [apakahBilahSampingTerlipat, aturBilahSampingTerlipat] = useState(false)
-  const [daftarTugas, aturDaftarTugas] = usePenyimpananLokal('studyflow_tasks', sampleTasks)
-  const [daftarMataPelajaran, aturDaftarMataPelajaran] = usePenyimpananLokal('studyflow_subjects', sampleSubjects)
-  const [daftarCatatan, aturDaftarCatatan] = usePenyimpananLokal('studyflow_notes', sampleNotes)
-  const [daftarPengingat, aturDaftarPengingat] = usePenyimpananLokal('studyflow_reminders', sampleReminders)
-  const [daftarAktivitas, aturDaftarAktivitas] = usePenyimpananLokal('studyflow_activities', sampleActivities)
+  const [daftarTugas, aturDaftarTugas] = usePenyimpananLokal('studyflow_tasks', [])
+  const [daftarMataPelajaran, aturDaftarMataPelajaran] = usePenyimpananLokal('studyflow_subjects', [])
+  const [daftarCatatan, aturDaftarCatatan] = usePenyimpananLokal('studyflow_notes', [])
+  const [daftarPengingat, aturDaftarPengingat] = usePenyimpananLokal('studyflow_reminders', [])
+  const [daftarAktivitas, aturDaftarAktivitas] = usePenyimpananLokal('studyflow_activities', [])
   const [pengaturan, aturPengaturan] = usePenyimpananLokal('studyflow_settings', { name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
   const [modal, setModal] = useState(null)
   const [kataPencarian, aturKataPencarian] = useState('')
@@ -305,16 +289,16 @@ function Aplikasi() {
   }
 
   async function kembalikanKeDefault() {
-    const disetujui = await tampilkanKonfirmasi({ judul: 'Kembalikan StudyFlow ke default?', pesan: 'Pengaturan dan data belajar akan dikembalikan ke kondisi awal aplikasi. Profil, preferensi tema, timer, dan perubahan data saat ini akan diatur ulang. Logo, aset aplikasi, kode, serta motivasi harian tetap aman.', jenis: 'warning', frasaKonfirmasi: 'KEMBALIKAN DEFAULT', labelKonfirmasi: 'Kembalikan ke Default' })
+    const disetujui = await tampilkanKonfirmasi({ judul: 'Kembalikan StudyFlow ke default?', pesan: 'Pengaturan dan data belajar akan dikembalikan ke kondisi awal yang kosong. Profil, preferensi tema, timer, dan perubahan data saat ini akan diatur ulang. Logo, aset aplikasi, kode, serta motivasi harian tetap aman.', jenis: 'warning', frasaKonfirmasi: 'KEMBALIKAN DEFAULT', labelKonfirmasi: 'Kembalikan ke Default' })
     if (!disetujui) return
 
     const pengaturanAwal = { name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 }
     const dataAwal = [
-      ['studyflow_tasks', sampleTasks],
-      ['studyflow_subjects', sampleSubjects],
-      ['studyflow_notes', sampleNotes],
-      ['studyflow_reminders', sampleReminders],
-      ['studyflow_activities', sampleActivities],
+      ['studyflow_tasks', []],
+      ['studyflow_subjects', []],
+      ['studyflow_notes', []],
+      ['studyflow_reminders', []],
+      ['studyflow_activities', []],
       ['studyflow_settings', pengaturanAwal],
       ['studyflow_focus_history', []],
       ['studyflow_focus_sessions', 0],
@@ -338,8 +322,8 @@ function Aplikasi() {
       return
     }
 
-    aturDaftarTugas(sampleTasks); aturDaftarMataPelajaran(sampleSubjects); aturDaftarCatatan(sampleNotes); aturDaftarPengingat(sampleReminders); aturDaftarAktivitas(sampleActivities); aturPengaturan(pengaturanAwal); aturJumlahSesiFokus(0); aturRiwayatFokus([]); aturTimerBerjalan(false); aturModeTimer('Fokus'); aturSisaDetik(25 * 60); aturDurasiTimerDetik(25 * 60)
-    tampilkanNotifikasi('StudyFlow berhasil dikembalikan ke kondisi default.')
+    aturDaftarTugas([]); aturDaftarMataPelajaran([]); aturDaftarCatatan([]); aturDaftarPengingat([]); aturDaftarAktivitas([]); aturPengaturan(pengaturanAwal); aturJumlahSesiFokus(0); aturRiwayatFokus([]); aturTimerBerjalan(false); aturModeTimer('Fokus'); aturSisaDetik(25 * 60); aturDurasiTimerDetik(25 * 60)
+    tampilkanNotifikasi('StudyFlow berhasil dikembalikan ke kondisi awal yang kosong.')
   }
 
   return <div className={`app-shell ${apakahBilahSampingTerlipat ? 'sidebar-collapsed' : ''}`}>
