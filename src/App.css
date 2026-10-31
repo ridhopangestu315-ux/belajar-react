@@ -372,5 +372,11 @@ body { background:var(--canvas); color:var(--ink); font-family:'Plus Jakarta San
 .calendar-selected h3 { font:600 14px Outfit,'Plus Jakarta Sans',sans-serif; margin:0 0 10px; }
 .selected-event-list { display:grid; gap:8px; }
 .selected-event { display:flex; align-items:center; gap:8px; font-size:12px; padding:7px 0; }
+.subject-description { margin-top:7px!important; line-height:1.55; }
+.subject-code { display:inline-block; margin-top:7px; font-size:10px; color:var(--muted); }
+.profile-fields { margin-top:12px; }
+.progress-summary-grid { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.sidebar-profile div:nth-child(2) span { max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 :root[data-theme="dark"] .calendar-day.is-selected { background:var(--soft); }
+@media(max-width:760px) { .progress-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }

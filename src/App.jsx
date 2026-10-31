@@ -6,21 +6,92 @@ import { useLocalStorage } from './hooks/useLocalStorage.js'
 const today = () => new Date().toISOString().slice(0, 10)
 const dateAfter = (days) => { const date = new Date(); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10) }
 const createId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
-const pageToData = { 'Mata Kuliah': 'subjects', Tugas: 'tasks', Catatan: 'notes', Pengingat: 'reminders' }
+const pageToData = { 'Mata Pelajaran': 'subjects', Tugas: 'tasks', Catatan: 'notes', Pengingat: 'reminders' }
 const todayWeekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date())
 const sampleSubjects = [
-  { id:'sample-course-1', name:'Interaksi Manusia & Komputer', code:'IF3201', lecturer:'Dr. Hendra Wijaya, M.Kom', color:'#D5735B', schedule:[{ day:todayWeekday, start:'08:00', end:'10:30', room:'Lab Komputer 3' }] },
-  { id:'sample-course-2', name:'Basis Data Terdistribusi', code:'IF3202', lecturer:'Prof. Retno Suryani', color:'#4D7260', schedule:[{ day:'Rabu', start:'13:15', end:'15:45', room:'Gedung B · R.402' }] },
-  { id:'sample-course-3', name:'Pemrograman Web Lanjut', code:'IF3205', lecturer:'Maya Puspita, S.Kom, M.T', color:'#D49A43', schedule:[{ day:'Kamis', start:'10:00', end:'12:30', room:'Lab Software 2' }] },
+  { id:'sample-subject-1', name:'Matematika', category:'Eksakta', teacher:'', level:'', description:'', code:'', color:'#D5735B', schedule:[{ day:todayWeekday, start:'16:00', end:'16:45', room:'' }] },
+  { id:'sample-subject-2', name:'Bahasa Indonesia', category:'Bahasa', teacher:'', level:'', description:'', code:'', color:'#4D7260', schedule:[] },
+  { id:'sample-subject-3', name:'Bahasa Inggris', category:'Bahasa', teacher:'', level:'', description:'', code:'', color:'#D49A43', schedule:[] },
+  { id:'sample-subject-4', name:'IPA', category:'Sains', teacher:'', level:'', description:'', code:'', color:'#5476A8', schedule:[] },
+  { id:'sample-subject-5', name:'IPS', category:'Sosial', teacher:'', level:'', description:'', code:'', color:'#8A6B9A', schedule:[] },
+  { id:'sample-subject-6', name:'Informatika', category:'Teknologi', teacher:'', level:'', description:'', code:'', color:'#D49A43', schedule:[] },
+  { id:'sample-subject-7', name:'Sejarah', category:'Humaniora', teacher:'', level:'', description:'', code:'', color:'#4D7260', schedule:[] },
 ]
 const sampleTasks = [
-  { id:'sample-task-1', title:'Laporan usability testing', description:'Rangkum temuan pengujian dan rekomendasi perbaikan.', subject:sampleSubjects[0].name, deadline:dateAfter(1), priority:'Tinggi', status:'Belum dikerjakan', done:false },
-  { id:'sample-task-2', title:'Latihan normalisasi database', description:'Selesaikan studi kasus sampai bentuk normal BCNF.', subject:sampleSubjects[1].name, deadline:dateAfter(3), priority:'Sedang', status:'Sedang dikerjakan', done:false },
-  { id:'sample-task-3', title:'Baca materi React hooks', description:'Catat contoh penggunaan state dan effect.', subject:sampleSubjects[2].name, deadline:dateAfter(5), priority:'Rendah', status:'Selesai', done:true },
+  { id:'sample-task-1', title:'Mengerjakan latihan matematika', description:'Selesaikan latihan pecahan dan periksa kembali jawaban.', subject:sampleSubjects[0].name, deadline:dateAfter(1), priority:'Tinggi', status:'Belum dikerjakan', done:false },
+  { id:'sample-task-2', title:'Membuat rangkuman IPA', description:'Catat pokok materi dan istilah penting dengan bahasamu sendiri.', subject:sampleSubjects[3].name, deadline:dateAfter(3), priority:'Sedang', status:'Sedang dikerjakan', done:false },
+  { id:'sample-task-3', title:'Membaca materi Bahasa Indonesia', description:'Baca satu bab dan tulis hal penting yang kamu pelajari.', subject:sampleSubjects[1].name, deadline:dateAfter(5), priority:'Rendah', status:'Selesai', done:true },
+  { id:'sample-task-4', title:'Belajar untuk ujian Bahasa Inggris', description:'Ulangi kosakata dan kerjakan soal latihan.', subject:sampleSubjects[2].name, deadline:dateAfter(6), priority:'Sedang', status:'Belum dikerjakan', done:false },
 ]
-const sampleActivities = [{ id:'sample-activity-1', text:'Menambahkan jadwal belajar minggu ini', date:today() }, { id:'sample-activity-2', text:'Menyelesaikan latihan React hooks', date:today() }]
-const sampleNotes = [{ id:'sample-note-1', title:'Catatan usability testing', description:'Perhatikan alur navigasi, label tombol, dan feedback setelah pengguna menyelesaikan tugas.', subject:sampleSubjects[0].name, createdAt:today() }]
-const sampleReminders = [{ id:'sample-reminder-1', title:'Persiapan diskusi basis data', description:'Bawa catatan normalisasi untuk sesi kelompok.', date:dateAfter(2), time:'08:00', done:false }]
+const sampleActivities = [{ id:'sample-activity-1', text:'Menambahkan rencana belajar minggu ini', date:today() }, { id:'sample-activity-2', text:'Membaca materi Bahasa Indonesia', date:today() }]
+const sampleNotes = [{ id:'sample-note-1', title:'Catatan belajar minggu ini', description:'Tuliskan hal penting yang sudah dipelajari dan pertanyaan yang ingin dibahas.', subject:sampleSubjects[1].name, createdAt:today() }]
+const sampleReminders = [{ id:'sample-reminder-1', title:'Belajar untuk ujian', description:'Siapkan materi dan latihan yang ingin diulang.', date:dateAfter(2), time:'16:00', done:false }]
+
+function migrasikanDataBelajar() {
+  try {
+    if (localStorage.getItem('studyflow_universal_v1')) return
+    const parseArray = (key) => {
+      try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : [] } catch { return [] }
+    }
+    const currentSubjects = parseArray('studyflow_subjects')
+    const oldCourses = parseArray('studyflow_courses')
+    const normalizeSchedule = (schedule, fallbackRoom = '') => {
+      if (Array.isArray(schedule)) return schedule.map((slot) => ({ ...slot, room: slot.room || fallbackRoom || '' }))
+      if (typeof schedule !== 'string' || !schedule.trim()) return []
+      const match = schedule.match(/(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu),?\s*(\d{1,2}:\d{2})\s*(?:-|\u2013)\s*(\d{1,2}:\d{2})/i)
+      return match ? [{ day: match[1], start: match[2], end: match[3], room: fallbackRoom }] : []
+    }
+    const normalizeSubject = (subject) => {
+      const data = { ...subject }
+      const lecturer = data.lecturer
+      const room = data.room
+      delete data.lecturer
+      delete data.credits
+      delete data.room
+      delete data.field
+      const legacyColors = { terra:'#D5735B', sage:'#4D7260', amber:'#D49A43', teal:'#4D8A83' }
+      return { ...data, teacher: data.teacher || lecturer || '', category: data.category || data.field || 'Umum', level: data.level || '', description: data.description || '', code: data.code || '', color: data.color?.startsWith('#') ? data.color : legacyColors[data.color] || '#D5735B', schedule: normalizeSchedule(data.schedule, room) }
+    }
+    const subjects = [...currentSubjects, ...oldCourses].map(normalizeSubject)
+    const uniqueSubjects = subjects.filter((subject, index, list) => list.findIndex((item) => (item.id && item.id === subject.id) || item.name?.toLowerCase() === subject.name?.toLowerCase()) === index)
+    const existingTasks = parseArray('studyflow_tasks')
+    const existingNotes = parseArray('studyflow_notes')
+    const existingReminders = parseArray('studyflow_reminders')
+    const existingActivities = parseArray('studyflow_activities')
+    const hasLearningData = uniqueSubjects.length + existingTasks.length + existingNotes.length + existingReminders.length + existingActivities.length > 0
+    if (!hasLearningData) {
+      localStorage.setItem('studyflow_subjects', JSON.stringify(sampleSubjects))
+      localStorage.setItem('studyflow_tasks', JSON.stringify(sampleTasks))
+      localStorage.setItem('studyflow_notes', JSON.stringify(sampleNotes))
+      localStorage.setItem('studyflow_reminders', JSON.stringify(sampleReminders))
+      localStorage.setItem('studyflow_activities', JSON.stringify(sampleActivities))
+    } else if (uniqueSubjects.length) {
+      localStorage.setItem('studyflow_subjects', JSON.stringify(uniqueSubjects))
+    }
+    localStorage.removeItem('studyflow_courses')
+
+    const normalizedTasks = existingTasks.map((task) => {
+      const linkedSubject = uniqueSubjects.find((subject) => subject.id === task.courseId || subject.name === task.courseName)
+      const data = { ...task }
+      const courseName = data.courseName
+      const dueDate = data.dueDate
+      const dueTime = data.dueTime
+      const description = data.description || data.desc || ''
+      const completed = data.completed
+      ;['courseId', 'courseName', 'dueDate', 'dueTime', 'desc', 'completed'].forEach((key) => delete data[key])
+      const done = task.done ?? completed ?? false
+      return { ...data, subject: task.subject || courseName || linkedSubject?.name || '', deadline: task.deadline || dueDate || '', time: task.time || dueTime || '', description, done, status: task.status || (done ? 'Selesai' : 'Belum dikerjakan') }
+    })
+    if (hasLearningData && existingTasks.length) localStorage.setItem('studyflow_tasks', JSON.stringify(normalizedTasks))
+    const settings = localStorage.getItem('studyflow_settings')
+    if (settings) {
+      try { localStorage.setItem('studyflow_settings', JSON.stringify({ educationLevel:'', classLevel:'', institution:'', ...JSON.parse(settings) })) } catch { /* Keep malformed settings for the safe hook fallback. */ }
+    }
+    localStorage.setItem('studyflow_universal_v1', 'true')
+  } catch { /* Storage may be unavailable in private browsing; the app still uses in-memory defaults. */ }
+}
+
+migrasikanDataBelajar()
 
 function App() {
   const [activePage, setActivePage] = useState('Dashboard')
@@ -30,10 +101,11 @@ function App() {
   const [notes, setNotes] = useLocalStorage('studyflow_notes', sampleNotes)
   const [reminders, setReminders] = useLocalStorage('studyflow_reminders', sampleReminders)
   const [activities, setActivities] = useLocalStorage('studyflow_activities', sampleActivities)
-  const [settings, setSettings] = useLocalStorage('studyflow_settings', { name: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
+  const [settings, setSettings] = useLocalStorage('studyflow_settings', { name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
   const [modal, setModal] = useState(null)
   const [search, setSearch] = useState('')
   const [taskFilter, setTaskFilter] = useState('Semua tugas')
+  const [subjectFilter, setSubjectFilter] = useState('Semua bidang')
   const [monthOffset, setMonthOffset] = useState(0)
   const [timerMode, setTimerMode] = useState('Fokus')
   const [secondsLeft, setSecondsLeft] = useLocalStorage('studyflow_timer_seconds', (settings.focusMinutes || 25) * 60)
@@ -101,7 +173,10 @@ function App() {
       const taskData = { ...formData, done: formData.status === 'Selesai' }
       setTasks((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...taskData } : entry) : [...list, { ...taskData, id }])
       if (!item) addActivity(`Menambahkan tugas “${formData.title}”`)
-    } else if (page === 'Mata Kuliah') setSubjects((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id }])
+    } else if (page === 'Mata Pelajaran') {
+      const subjectData = { ...formData, teacher: formData.teacher || '', category: formData.category || 'Umum', level: formData.level || '', description: formData.description || '', code: formData.code || '' }
+      setSubjects((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...subjectData } : entry) : [...list, { ...subjectData, id }])
+    }
     else if (page === 'Catatan') setNotes((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, createdAt: today() }])
     else if (page === 'Pengingat') setReminders((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, done: false }])
     else if (page === 'Kalender') setActivities((list) => [{ ...formData, id, date: formData.date || today(), type: 'Kegiatan' }, ...list])
@@ -115,7 +190,7 @@ function App() {
   }
 
   function removeItem(page, id) {
-    const setter = { Tugas: setTasks, 'Mata Kuliah': setSubjects, Catatan: setNotes, Pengingat: setReminders }[page]
+    const setter = { Tugas: setTasks, 'Mata Pelajaran': setSubjects, Catatan: setNotes, Pengingat: setReminders }[page]
     if (setter) setter((list) => list.filter((item) => item.id !== id))
   }
 
@@ -139,16 +214,16 @@ function App() {
 
   function resetAppData() {
     if (!window.confirm('Hapus semua data StudyFlow dari browser ini?')) return
-    setTasks([]); setSubjects([]); setNotes([]); setReminders([]); setActivities([]); setFocusSessions(0); setSettings({ name: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
+    setTasks([]); setSubjects([]); setNotes([]); setReminders([]); setActivities([]); setFocusSessions(0); setSettings({ name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
   }
 
   return <div className="app-shell">
-    <Sidebar activePage={activePage} onNavigate={setActivePage} isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} userName={settings.name} />
+    <Sidebar activePage={activePage} onNavigate={setActivePage} isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} userName={settings.name} userSummary={[settings.educationLevel, settings.classLevel, settings.institution].filter(Boolean).join(' · ') || 'Ruang belajarmu'} />
     <main className="main-area">
       <header className="topbar"><button className="icon-button mobile-menu" aria-label="Buka navigasi" onClick={() => setSidebarOpen(true)}><Menu size={21}/></button><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{activePage}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button notification-button" aria-label="Pengingat" onClick={() => setActivePage('Pengingat')}><Bell size={19}/>{reminders.some((item) => !item.done) && <i/>}</button><div className="avatar avatar-small">{(settings.name || 'S').slice(0, 1).toUpperCase()}</div></div></header>
       <section className="page-content" key={activePage}>
         {activePage === 'Dashboard' && <Dashboard name={settings.name} tasks={sortedTasks} subjects={subjects} activities={activities} totalTasks={tasks.length} openTasks={openTasks} completedTasks={completedTasks} progress={progress} onToggleTask={toggleTask} onAddTask={() => openCreateForm('Tugas')} onNavigate={setActivePage} animateStats={!hasAnimatedStats.current}/>}
-        {pageToData[activePage] && <DataPage page={activePage} data={({ Tugas: sortedTasks, 'Mata Kuliah': subjects, Catatan: notes, Pengingat: [...reminders].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[activePage]} search={search} setSearch={setSearch} filter={taskFilter} setFilter={setTaskFilter} onAdd={() => openCreateForm()} onEdit={(item) => openCreateForm(activePage, item)} onDelete={(id) => removeItem(activePage, id)} onToggle={(id) => activePage === 'Tugas' ? toggleTask(id) : setReminders((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
+        {pageToData[activePage] && <DataPage page={activePage} data={({ Tugas: sortedTasks, 'Mata Pelajaran': subjects, Catatan: notes, Pengingat: [...reminders].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[activePage]} search={search} setSearch={setSearch} filter={taskFilter} setFilter={setTaskFilter} subjectFilter={subjectFilter} setSubjectFilter={setSubjectFilter} onAdd={() => openCreateForm()} onEdit={(item) => openCreateForm(activePage, item)} onDelete={(id) => removeItem(activePage, id)} onToggle={(id) => activePage === 'Tugas' ? toggleTask(id) : setReminders((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
         {activePage === 'Kalender' && <CalendarPage tasks={tasks} subjects={subjects} activities={activities} monthOffset={monthOffset} setMonthOffset={setMonthOffset} onAdd={() => openCreateForm('Kalender')}/>}
         {activePage === 'Focus Mode' && <FocusPage mode={timerMode} seconds={secondsLeft} running={timerRunning} sessions={focusSessions} onMode={updateTimerMode} onRun={startFocusTimer} onPause={() => setTimerRunning(false)} onReset={() => { setTimerRunning(false); updateTimerMode(timerMode) }}/ >}
         {activePage === 'Progress Belajar' && <ProgressPage tasks={tasks} subjects={subjects} sessions={focusSessions} focusMinutes={settings.focusMinutes} activities={activities}/>}
@@ -166,11 +241,11 @@ function Dashboard({ name, tasks, subjects, activities, totalTasks, openTasks, c
   const todayClasses = subjects.flatMap((subject) => (subject.schedule || []).filter((slot) => slot.day === weekday).map((slot) => ({ ...slot, subject })))
   return <>
     <div className="welcome-row"><div><p className="eyebrow">{new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}</p><h1>Selamat {new Date().getHours() < 11 ? 'pagi' : new Date().getHours() < 15 ? 'siang' : 'sore'}{name ? `, ${name}` : ''} <span>✦</span></h1><p className="muted">Siap untuk membuat hari ini lebih produktif?</p></div><button className="primary-button" onClick={onAddTask}><Plus size={18}/>Tambah tugas</button></div>
-    <div className="dashboard-summary"><span className="summary-title">Ringkasan tugas</span><div><strong><CountUp value={totalTasks} active={animateStats}/></strong><small>Total</small></div><div><strong><CountUp value={openTasks} active={animateStats}/></strong><small>Berjalan</small></div><div><strong><CountUp value={completedTasks} active={animateStats}/></strong><small>Selesai</small></div><span className="summary-subjects">{subjects.length} mata kuliah</span></div>
+    <div className="dashboard-summary"><span className="summary-title">Ringkasan tugas</span><div><strong><CountUp value={totalTasks} active={animateStats}/></strong><small>Total</small></div><div><strong><CountUp value={openTasks} active={animateStats}/></strong><small>Berjalan</small></div><div><strong><CountUp value={completedTasks} active={animateStats}/></strong><small>Selesai</small></div><span className="summary-subjects">{subjects.length} mata pelajaran</span></div>
     <div className="dashboard-grid"><section className="panel progress-panel"><div className="panel-heading"><div><p className="eyebrow">PERFORMA</p><h2>Progress belajarmu</h2></div><button className="text-button" onClick={() => onNavigate('Progress Belajar')}>Lihat detail <ChevronRight size={16}/></button></div><div className="progress-content"><div className="progress-ring progress-animate" style={{ '--progress': `${progress}%` }}><div><strong>{progress}%</strong><span>selesai</span></div></div><div className="progress-legend"><p><i className="legend-dot purple-dot"/>Tugas selesai <strong>{completedTasks}</strong></p><p><i className="legend-dot gray-dot"/>Belum selesai <strong>{openTasks}</strong></p><span className="soft-message"><Sparkles size={16}/>Setiap langkah kecil berarti.</span></div></div></section>
       <section className="panel"><div className="panel-heading"><div><p className="eyebrow">DEADLINE</p><h2>Tugas terdekat</h2></div><button className="text-button" onClick={() => onNavigate('Tugas')}>Semua tugas <ChevronRight size={16}/></button></div>{upcoming.length ? <div className="task-list">{upcoming.map((task) => <TaskRow key={task.id} task={task} onToggle={onToggleTask}/>)}</div> : <EmptyState text="Belum ada tugas. Mulai dengan satu langkah kecil hari ini." actionLabel="Tambah tugas" onAction={onAddTask}/>}</section>
-      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">JADWAL</p><h2>Kuliah hari ini</h2></div><button className="text-button" onClick={() => onNavigate('Mata Kuliah')}>Lihat jadwal <ChevronRight size={16}/></button></div>{todayClasses.length ? <div className="class-list">{todayClasses.map((slot, index) => <div className="class-row" key={`${slot.subject.id}-${index}`}><span className="class-time">{slot.start || '—'}</span><span className="class-bar" style={{ background: slot.subject.color || '#D5735B' }}/><div><strong>{slot.subject.name}</strong><span>{slot.subject.code || 'Mata kuliah'} · {slot.room || 'Ruang kuliah'}</span></div></div>)}</div> : <EmptyState text="Belum ada jadwal hari ini. Atur jadwal dari mata kuliahmu." actionLabel="Lihat mata kuliah" onAction={() => onNavigate('Mata Kuliah')}/>}</section>
-      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">AKTIVITAS</p><h2>Aktivitas belajar</h2></div><TrendingUp size={19} className="subtle-icon" aria-label="Tren aktivitas"/></div>{activities.length ? <div className="activity-list">{activities.slice(0, 4).map((item, index) => <div className="activity-row activity-enter" style={{ '--item-index': index }} key={item.id}><span className="activity-mark"><Check size={14}/></span><div><strong>{item.text}</strong><span>{item.date}</span></div></div>)}</div> : <EmptyState text="Aktivitas belajar akan muncul di sini setelah kamu menambahkan tugas atau catatan."/>}</section></div>
+      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">JADWAL</p><h2>Jadwal belajar hari ini</h2></div><button className="text-button" onClick={() => onNavigate('Mata Pelajaran')}>Lihat jadwal <ChevronRight size={16}/></button></div>{todayClasses.length ? <div className="class-list">{todayClasses.map((slot, index) => <div className="class-row" key={`${slot.subject.id}-${index}`}><span className="class-time">{slot.start || '—'}</span><span className="class-bar" style={{ background: slot.subject.color || '#D5735B' }}/><div><strong>{slot.subject.name}</strong><span>{slot.subject.code ? `Kode ${slot.subject.code}` : (slot.subject.category || 'Mata pelajaran')} · {slot.room || 'Lokasi belajar'}</span></div></div>)}</div> : <EmptyState text="Belum ada jadwal belajar hari ini. Atur waktu belajar pada mata pelajaranmu." actionLabel="Lihat mata pelajaran" onAction={() => onNavigate('Mata Pelajaran')}/>}</section>
+      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">AKTIVITAS BELAJAR</p><h2>Aktivitas terbaru</h2></div><TrendingUp size={19} className="subtle-icon" aria-label="Tren aktivitas"/></div>{activities.length ? <div className="activity-list">{activities.slice(0, 4).map((item, index) => <div className="activity-row activity-enter" style={{ '--item-index': index }} key={item.id}><span className="activity-mark"><Check size={14}/></span><div><strong>{item.text}</strong><span>{item.date}</span></div></div>)}</div> : <EmptyState text="Aktivitas belajar akan muncul di sini setelah kamu menambahkan tugas atau catatan."/>}</section></div>
   </>
 }
 
@@ -195,23 +270,27 @@ function EmptyState({ text, actionLabel, onAction }) { return <div className="em
 function TaskRow({ task, onToggle }) {
   const late = task.deadline && task.deadline < today()
   const soon = task.deadline && !late && (new Date(task.deadline) - new Date(today())) / 86400000 < 3
-  return <div className={`task-row ${task.done ? 'task-done' : ''}`}><button className="check-button" aria-label={task.done ? 'Tandai belum selesai' : 'Tandai selesai'} onClick={() => onToggle(task.id)}>{task.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="task-main"><strong>{task.title}</strong><span>{task.subject || 'Tanpa mata kuliah'} · <span className={late ? 'deadline-late' : soon ? 'deadline-soon' : ''}>{task.deadline ? new Date(`${task.deadline}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : 'Tanpa deadline'}</span></span></div><span className={`priority priority-${(task.priority || 'sedang').toLowerCase()}`}>{task.priority || 'Sedang'}</span></div>
+  return <div className={`task-row ${task.done ? 'task-done' : ''}`}><button className="check-button" aria-label={task.done ? 'Tandai belum selesai' : 'Tandai selesai'} onClick={() => onToggle(task.id)}>{task.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="task-main"><strong>{task.title}</strong><span>{task.subject || 'Tanpa mata pelajaran'} · <span className={late ? 'deadline-late' : soon ? 'deadline-soon' : ''}>{task.deadline ? new Date(`${task.deadline}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : 'Tanpa deadline'}</span></span></div><span className={`priority priority-${(task.priority || 'sedang').toLowerCase()}`}>{task.priority || 'Sedang'}</span></div>
 }
 
-function DataPage({ page, data, search, setSearch, filter, setFilter, onAdd, onEdit, onDelete, onToggle }) {
+function DataPage({ page, data, search, setSearch, filter, setFilter, subjectFilter, setSubjectFilter, onAdd, onEdit, onDelete, onToggle }) {
+  const isSubjects = page === 'Mata Pelajaran'
+  const subjectCategories = [...new Set(data.map((item) => item.category).filter(Boolean))]
   const filtered = data.filter((item) => {
-    const searchable = `${item.title || ''} ${item.name || ''} ${item.description || ''} ${item.subject || ''}`.toLowerCase().includes(search.toLowerCase())
+    const searchable = `${item.title || ''} ${item.name || ''} ${item.description || ''} ${item.subject || ''} ${item.teacher || ''} ${item.category || ''} ${item.level || ''}`.toLowerCase().includes(search.toLowerCase())
+    if (isSubjects) return searchable && (subjectFilter === 'Semua bidang' || item.category === subjectFilter)
     if (page !== 'Tugas') return searchable
     return searchable && (filter === 'Semua tugas' || filter === 'Belum selesai' && !item.done || filter === 'Selesai' && item.done || filter === 'Prioritas tinggi' && item.priority === 'Tinggi' || filter === 'Sedang dikerjakan' && item.status === 'Sedang dikerjakan')
   })
-  return <><div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / {page.toUpperCase()}</p><h1>{page}</h1><p className="muted">{pageDescriptions[page]}</p></div><button className="primary-button" onClick={onAdd}><Plus size={18}/>{page === 'Mata Kuliah' ? 'Tambah mata kuliah' : page === 'Tugas' ? 'Tambah tugas' : page === 'Catatan' ? 'Tambah catatan' : 'Tambah pengingat'}</button></div>
-    <section className="panel data-panel"><div className="data-toolbar"><div className="search-box"><Search size={17}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Cari ${page.toLowerCase()}...`}/></div>{page === 'Tugas' && <select className="select-control" value={filter} onChange={(event) => setFilter(event.target.value)}>{['Semua tugas', 'Belum selesai', 'Sedang dikerjakan', 'Selesai', 'Prioritas tinggi'].map((option) => <option key={option}>{option}</option>)}</select>}</div>
-      {filtered.length ? <div className={page === 'Mata Kuliah' || page === 'Catatan' ? 'cards-grid' : 'records-list'}>{filtered.map((item) => <DataCard key={item.id} item={item} page={page} onEdit={() => onEdit(item)} onDelete={() => onDelete(item.id)} onToggle={() => onToggle(item.id)}/>)}</div> : <EmptyState text={`Belum ada ${page.toLowerCase()} di sini. Gunakan tombol tambah untuk memulai.`}/>}</section></>
+  const addLabel = isSubjects ? 'Tambah mata pelajaran' : page === 'Tugas' ? 'Tambah tugas' : page === 'Catatan' ? 'Tambah catatan' : 'Tambah pengingat'
+  return <><div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / {page.toUpperCase()}</p><h1>{page}</h1><p className="muted">{pageDescriptions[page]}</p></div><button className="primary-button" onClick={onAdd}><Plus size={18}/>{addLabel}</button></div>
+    <section className="panel data-panel"><div className="data-toolbar"><div className="search-box"><Search size={17}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Cari ${page.toLowerCase()}...`}/></div>{page === 'Tugas' && <select className="select-control" value={filter} onChange={(event) => setFilter(event.target.value)}>{['Semua tugas', 'Belum selesai', 'Sedang dikerjakan', 'Selesai', 'Prioritas tinggi'].map((option) => <option key={option}>{option}</option>)}</select>}{isSubjects && <select className="select-control" value={subjectFilter} onChange={(event) => setSubjectFilter(event.target.value)}><option>Semua bidang</option>{subjectCategories.map((category) => <option key={category}>{category}</option>)}</select>}</div>
+      {filtered.length ? <div className={page === 'Mata Pelajaran' || page === 'Catatan' ? 'cards-grid' : 'records-list'}>{filtered.map((item) => <DataCard key={item.id} item={item} page={page} onEdit={() => onEdit(item)} onDelete={() => onDelete(item.id)} onToggle={() => onToggle(item.id)}/>)}</div> : <EmptyState text={`Belum ada ${page.toLowerCase()} di sini. Gunakan tombol tambah untuk memulai.`}/>}</section></>
 }
-const pageDescriptions = { 'Mata Kuliah': 'Atur kelas, dosen, dan jadwal kuliahmu.', Tugas: 'Kelola tugas dan jaga deadline tetap terkendali.', Catatan: 'Simpan ide dan catatan perkuliahanmu.', Pengingat: 'Ingat aktivitas penting yang akan datang.' }
+const pageDescriptions = { 'Mata Pelajaran': 'Atur materi, pengajar, kategori, dan jadwal belajarmu.', Tugas: 'Kelola tugas dan jaga deadline tetap terkendali.', Catatan: 'Simpan ide dan catatan belajarmu.', Pengingat: 'Ingat aktivitas penting yang akan datang.' }
 function DataCard({ item, page, onEdit, onDelete, onToggle }) {
-  if (page === 'Tugas') return <div className={`record-task ${item.done ? 'task-done' : ''}`}><button className="check-button" onClick={onToggle} aria-label="Ubah status">{item.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="record-body"><strong>{item.title}</strong><p>{item.description || 'Tidak ada deskripsi'}</p><span>{item.subject || 'Tanpa mata kuliah'} · Deadline {item.deadline || 'belum ditentukan'}</span></div><span className={`priority priority-${(item.priority || 'sedang').toLowerCase()}`}>{item.status || (item.done ? 'Selesai' : item.priority || 'Sedang')}</span><RecordActions onEdit={onEdit} onDelete={onDelete}/></div>
-  if (page === 'Mata Kuliah') return <article className="subject-card" style={{ '--subject-color': item.color || '#D5735B' }}><div className="subject-card-top"><span className="subject-color-dot"/><span>{item.code || 'KELAS'}</span><RecordActions onEdit={onEdit} onDelete={onDelete}/></div><h3>{item.name}</h3><p>{item.lecturer || 'Nama dosen belum diisi'}</p><div className="subject-schedule">{(item.schedule || []).map((slot, i) => <span key={i}>{slot.day} · {slot.start}–{slot.end}</span>)}{!item.schedule?.length && <span>Jadwal belum ditambahkan</span>}</div></article>
+  if (page === 'Tugas') return <div className={`record-task ${item.done ? 'task-done' : ''}`}><button className="check-button" onClick={onToggle} aria-label="Ubah status">{item.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="record-body"><strong>{item.title}</strong><p>{item.description || 'Tidak ada deskripsi'}</p><span>{item.subject || 'Tanpa mata pelajaran'} · Deadline {item.deadline || 'belum ditentukan'}</span></div><span className={`priority priority-${(item.priority || 'sedang').toLowerCase()}`}>{item.status || (item.done ? 'Selesai' : item.priority || 'Sedang')}</span><RecordActions onEdit={onEdit} onDelete={onDelete}/></div>
+  if (page === 'Mata Pelajaran') return <article className="subject-card" style={{ '--subject-color': item.color || '#D5735B' }}><div className="subject-card-top"><span className="subject-color-dot"/><span>{item.category || 'UMUM'}{item.level ? ` · ${item.level}` : ''}</span><RecordActions onEdit={onEdit} onDelete={onDelete}/></div><h3>{item.name}</h3>{item.teacher && <p>Pengajar: {item.teacher}</p>}{item.description && <p className="subject-description">{item.description}</p>}{item.code && <span className="subject-code">Kode pelajaran: {item.code}</span>}<div className="subject-schedule">{(item.schedule || []).map((slot, i) => <span key={i}>{slot.day} · {slot.start}–{slot.end}{slot.room ? ` · ${slot.room}` : ''}</span>)}{!item.schedule?.length && <span>Jadwal belajar belum ditambahkan</span>}</div></article>
   if (page === 'Catatan') return <article className="note-card"><div className="note-card-head"><span className="note-label">{item.subject || 'CATATAN'}</span><RecordActions onEdit={onEdit} onDelete={onDelete}/></div><h3>{item.title}</h3><p>{item.description}</p><span className="record-date">{item.createdAt}</span></article>
   return <div className="record-task"><button className="check-button" onClick={onToggle}>{item.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="record-body"><strong>{item.title}</strong><p>{item.description}</p><span>{item.date} {item.time && `· ${item.time}`}</span></div><RecordActions onEdit={onEdit} onDelete={onDelete}/></div>
 }
@@ -257,7 +336,7 @@ function CalendarPage({ tasks, subjects, activities, monthOffset, setMonthOffset
           </button>
         })}
       </div>
-      <div className="calendar-legend"><span><i className="legend-dot purple-dot" />Deadline tugas</span><span><i className="legend-dot blue-dot" />Kegiatan</span><span><i className="legend-dot green-dot" />Jadwal kuliah: {subjects.length} mata kuliah</span></div>
+      <div className="calendar-legend"><span><i className="legend-dot purple-dot" />Deadline tugas</span><span><i className="legend-dot blue-dot" />Kegiatan</span><span><i className="legend-dot green-dot" />Jadwal belajar: {subjects.length} mata pelajaran</span></div>
       <section className="calendar-selected">
         <h3>{selectedDay ? new Intl.DateTimeFormat('id-ID', { weekday:'long', day:'numeric', month:'long' }).format(new Date(dayDate(selectedDay) + 'T12:00:00')) : 'Pilih tanggal untuk melihat jadwal'}</h3>
         {selectedEvents.length ? <div className="selected-event-list">{selectedEvents.map((event, index) => {
@@ -286,15 +365,17 @@ function ProgressPage({ tasks, subjects, sessions, focusMinutes, activities }) {
     return { key, label: new Intl.DateTimeFormat('id-ID', { weekday: 'short' }).format(date), count: activities.filter((item) => item.date === key).length }
   })
   const maxDailyActivity = Math.max(...weekActivity.map((day) => day.count), 1)
+  const activeStudyDays = weekActivity.filter((day) => day.count > 0).length
   return <>
     <div className="welcome-row">
       <div><p className="eyebrow">STUDYFLOW / INSIGHT</p><h1>Progress belajar</h1><p className="muted">Lihat perkembangan dan rayakan kemajuanmu.</p></div>
     </div>
-    <div className="stats-grid">
+    <div className="stats-grid progress-summary-grid">
       <StatCard title="Total tugas" value={tasks.length} hint="Tercatat" icon={<CheckCircle2 />} tone="purple" />
       <StatCard title="Tugas selesai" value={completed} hint={`${percent}% dari total`} icon={<Check />} tone="green" />
       <StatCard title="Belum selesai" value={tasks.length - completed} hint="Masih bisa dikerjakan" icon={<Clock3 />} tone="blue" />
       <StatCard title="Sesi fokus" value={sessions} hint="Sesi tersimpan" icon={<Target />} tone="orange" />
+      <StatCard title="Hari aktif" value={activeStudyDays} hint="Dari 7 hari terakhir" icon={<CalendarDays />} tone="purple" />
     </div>
     <div className="dashboard-grid progress-grid">
       <section className="panel">
@@ -308,12 +389,12 @@ function ProgressPage({ tasks, subjects, sessions, focusMinutes, activities }) {
         {weekActivity.some((day) => day.count > 0) ? <div className="activity-bars">{weekActivity.map((day) => <div key={day.key} title={`${day.count} aktivitas`}><span style={{ height: `${Math.max(day.count / maxDailyActivity * 100, 8)}%` }} /><small>{day.label}</small></div>)}</div> : <EmptyState text="Aktivitas minggu ini akan muncul setelah kamu belajar." />}
       </section>
       <section className="panel">
-        <div className="panel-heading"><div><p className="eyebrow">MATA KULIAH</p><h2>Tugas per mata kuliah</h2></div></div>
+        <div className="panel-heading"><div><p className="eyebrow">MATA PELAJARAN</p><h2>Tugas per mata pelajaran</h2></div></div>
         {subjects.length ? <div className="subject-progress-list">{subjects.map((subject) => {
           const subjectTasks = tasks.filter((task) => task.subject === subject.name)
           const done = subjectTasks.filter((task) => task.done).length
           return <div key={subject.id}><div><span>{subject.name}</span><span>{done}/{subjectTasks.length}</span></div><div className="big-progress-bar"><span style={{ width: `${subjectTasks.length ? done / subjectTasks.length * 100 : 0}%`, background: subject.color || undefined }} /></div></div>
-        })}</div> : <EmptyState text="Tambahkan mata kuliah untuk melihat statistiknya." />}
+        })}</div> : <EmptyState text="Tambahkan mata pelajaran untuk melihat statistiknya." />}
       </section>
       <section className="panel">
         <div className="panel-heading"><div><p className="eyebrow">DURASI BELAJAR</p><h2>Fokus bertahap</h2></div></div>
@@ -325,32 +406,65 @@ function ProgressPage({ tasks, subjects, sessions, focusMinutes, activities }) {
 }
 
 function SettingsPage({ settings, setSettings, onReset }) {
-  const defaults = { name: '', theme: 'system', focusMinutes: 25, shortBreak: 5, longBreak: 15 }
-  return <><div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / PREFERENSI</p><h1>Pengaturan</h1><p className="muted">Sesuaikan ruang belajar agar terasa milikmu.</p></div></div><div className="settings-layout"><section className="panel settings-panel"><h2>Profil pengguna</h2><label className="field-label">Nama pengguna<input className="form-control" value={settings.name} placeholder="Masukkan namamu" onChange={(event) => setSettings({ ...settings, name: event.target.value })}/></label><h2>Tampilan</h2><label className="field-label">Tema<select className="form-control" value={settings.theme} onChange={(event) => setSettings({ ...settings, theme: event.target.value })}><option value="light">Terang</option><option value="dark">Gelap</option><option value="system">Sistem</option></select></label><h2>Timer fokus</h2><div className="settings-duration"><label className="field-label">Fokus (menit)<input className="form-control" type="number" min="1" max="90" value={settings.focusMinutes} onChange={(event) => setSettings({ ...settings, focusMinutes: Math.max(1, Number(event.target.value)) })}/></label><label className="field-label">Istirahat pendek<input className="form-control" type="number" min="1" max="30" value={settings.shortBreak} onChange={(event) => setSettings({ ...settings, shortBreak: Math.max(1, Number(event.target.value)) })}/></label><label className="field-label">Istirahat panjang<input className="form-control" type="number" min="1" max="60" value={settings.longBreak} onChange={(event) => setSettings({ ...settings, longBreak: Math.max(1, Number(event.target.value)) })}/></label></div><h2>Data aplikasi</h2><p className="muted">Seluruh data disimpan di browser ini menggunakan LocalStorage.</p><div className="settings-buttons"><button className="secondary-button" onClick={() => setSettings(defaults)}>Kembalikan pengaturan default</button><button className="danger-button" onClick={onReset}><Trash2 size={17}/>Hapus semua data</button></div></section><aside className="panel settings-tip"><span className="focus-side-icon"><Sparkles size={20}/></span><h2>Data tetap milikmu</h2><p>Pengaturan dan catatan tersimpan di browser yang sedang kamu gunakan. Menghapus data tidak dapat dibatalkan.</p></aside></div></>
+  const defaults = { name:'', educationLevel:'', classLevel:'', institution:'', theme:'light', focusMinutes:25, shortBreak:5, longBreak:15 }
+  const educationOptions = ['SMP', 'SMA', 'SMK', 'Perguruan Tinggi', 'Belajar Mandiri', 'Lainnya']
+  function updateSetting(name, value) {
+    setSettings((current) => ({ ...current, [name]: value }))
+  }
+  return <>
+    <div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / PREFERENSI</p><h1>Pengaturan</h1><p className="muted">Atur profil dan ruang belajar sesuai kebutuhanmu.</p></div></div>
+    <div className="settings-layout">
+      <section className="panel settings-panel">
+        <h2>Profil belajar</h2>
+        <label className="field-label">Nama pengguna<input className="form-control" value={settings.name || ''} placeholder="Nama panggilan (opsional)" onChange={(event) => updateSetting('name', event.target.value)} /></label>
+        <label className="field-label">Jenjang pendidikan (opsional)<select className="form-control" value={settings.educationLevel || ''} onChange={(event) => updateSetting('educationLevel', event.target.value)}><option value="">Pilih jenjang</option>{educationOptions.map((level) => <option key={level}>{level}</option>)}</select></label>
+        <div className="form-two profile-fields"><label className="field-label">Kelas atau tingkat<input className="form-control" value={settings.classLevel || ''} placeholder="Contoh: Kelas 8" onChange={(event) => updateSetting('classLevel', event.target.value)} /></label><label className="field-label">Sekolah atau institusi<input className="form-control" value={settings.institution || ''} placeholder="Opsional" onChange={(event) => updateSetting('institution', event.target.value)} /></label></div>
+        <h2>Tampilan</h2>
+        <label className="field-label">Tema<select className="form-control" value={settings.theme || 'light'} onChange={(event) => updateSetting('theme', event.target.value)}><option value="light">Terang</option><option value="dark">Gelap</option><option value="system">Sistem</option></select></label>
+        <h2>Timer fokus</h2>
+        <div className="settings-duration">
+          <label className="field-label">Fokus (menit)<input className="form-control" type="number" min="1" max="90" value={settings.focusMinutes} onChange={(event) => updateSetting('focusMinutes', Math.max(1, Number(event.target.value)))} /></label>
+          <label className="field-label">Istirahat pendek<input className="form-control" type="number" min="1" max="30" value={settings.shortBreak} onChange={(event) => updateSetting('shortBreak', Math.max(1, Number(event.target.value)))} /></label>
+          <label className="field-label">Istirahat panjang<input className="form-control" type="number" min="1" max="60" value={settings.longBreak} onChange={(event) => updateSetting('longBreak', Math.max(1, Number(event.target.value)))} /></label>
+        </div>
+        <h2>Data aplikasi</h2><p className="muted">Data belajar dan pengaturan tersimpan di browser ini.</p>
+        <div className="settings-buttons"><button className="secondary-button" onClick={() => setSettings(defaults)}>Kembalikan pengaturan default</button><button className="danger-button" onClick={onReset}><Trash2 size={17} />Hapus semua data</button></div>
+      </section>
+      <aside className="panel settings-tip"><span className="focus-side-icon"><Sparkles size={20} /></span><h2>Belajar dengan caramu</h2><p>Informasi jenjang dan institusi bersifat opsional. StudyFlow tetap bisa digunakan untuk belajar mandiri.</p></aside>
+    </div>
+  </>
 }
 
 function ItemModal({ modal, subjects, onClose, onSave }) {
   const { page, item } = modal
-  const isSubject = page === 'Mata Kuliah'
+  const isSubject = page === 'Mata Pelajaran'
   const isTask = page === 'Tugas'
   const isNote = page === 'Catatan'
   const isCalendar = page === 'Kalender'
-  const titleLabel = isSubject ? 'Nama mata kuliah' : 'Judul'
+  const titleLabel = isSubject ? 'Nama mata pelajaran' : 'Judul'
   function submitForm(event) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
     const value = (key) => String(form.get(key) || '').trim()
-    if (isSubject) onSave({ name: value('name'), code: value('code'), lecturer: value('lecturer'), color: value('color'), schedule: value('day') ? [{ day: value('day'), start: value('start'), end: value('end'), room: value('room') }] : [] })
+    if (isSubject) onSave({ name: value('name'), code: value('code'), teacher: value('teacher'), category: value('category'), level: value('level'), description: value('description'), color: value('color'), schedule: value('day') ? [{ day: value('day'), start: value('start'), end: value('end'), room: value('room') }] : [] })
     else if (isTask) onSave({ title: value('title'), description: value('description'), subject: value('subject'), deadline: value('deadline'), priority: value('priority'), status: value('status') })
     else if (isNote) onSave({ title: value('title'), description: value('description'), subject: value('subject') })
     else if (isCalendar) onSave({ title: value('title'), description: value('description'), date: value('date'), time: value('time') })
     else onSave({ title: value('title'), description: value('description'), date: value('date'), time: value('time') })
   }
-  return <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><section className="modal-card"><div className="modal-heading"><div><p className="eyebrow">STUDYFLOW / {page.toUpperCase()}</p><h2>{item ? 'Edit' : 'Tambah'} {isSubject ? 'mata kuliah' : isTask ? 'tugas' : isNote ? 'catatan' : isCalendar ? 'kegiatan' : 'pengingat'}</h2></div><button className="icon-button" onClick={onClose} aria-label="Tutup"><X size={20}/></button></div><form onSubmit={submitForm} className="modal-form">
+  return <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><section className="modal-card"><div className="modal-heading"><div><p className="eyebrow">STUDYFLOW / {page.toUpperCase()}</p><h2>{item ? 'Edit' : 'Tambah'} {isSubject ? 'mata pelajaran' : isTask ? 'tugas' : isNote ? 'catatan' : isCalendar ? 'kegiatan' : 'pengingat'}</h2></div><button className="icon-button" onClick={onClose} aria-label="Tutup"><X size={20}/></button></div><form onSubmit={submitForm} className="modal-form">
     <label className="field-label">{titleLabel}<input className="form-control" name={isSubject ? 'name' : 'title'} defaultValue={item?.name || item?.title || ''} required autoFocus/></label>
-    {isSubject ? <><label className="field-label">Kode mata kuliah<input className="form-control" name="code" defaultValue={item?.code || ''} placeholder="Contoh: IF101"/></label><label className="field-label">Nama dosen<input className="form-control" name="lecturer" defaultValue={item?.lecturer || ''}/></label><label className="field-label">Warna<input className="form-control color-input" type="color" name="color" defaultValue={item?.color || '#8170e8'}/></label><div className="form-two"><label className="field-label">Hari<select name="day" className="form-control" defaultValue={item?.schedule?.[0]?.day || ''}><option value="">Pilih hari</option>{['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'].map((day)=><option key={day}>{day}</option>)}</select></label><label className="field-label">Ruang<input className="form-control" name="room" defaultValue={item?.schedule?.[0]?.room || ''}/></label></div><div className="form-two"><label className="field-label">Mulai<input className="form-control" type="time" name="start" defaultValue={item?.schedule?.[0]?.start || ''}/></label><label className="field-label">Selesai<input className="form-control" type="time" name="end" defaultValue={item?.schedule?.[0]?.end || ''}/></label></div></> : <>
+    {isSubject ? <>
+      <label className="field-label">Pengajar (opsional)<input className="form-control" name="teacher" defaultValue={item?.teacher || ''} placeholder="Nama guru atau pengajar" /></label>
+      <div className="form-two"><label className="field-label">Bidang atau kategori<input className="form-control" name="category" defaultValue={item?.category || ''} placeholder="Contoh: Sains" /></label><label className="field-label">Kelas atau tingkat<input className="form-control" name="level" defaultValue={item?.level || ''} placeholder="Opsional" /></label></div>
+      <label className="field-label">Kode pelajaran (opsional)<input className="form-control" name="code" defaultValue={item?.code || ''} placeholder="Boleh dikosongkan" /></label>
+      <label className="field-label">Deskripsi (opsional)<textarea className="form-control textarea-control" name="description" rows="2" defaultValue={item?.description || ''} placeholder="Catatan singkat tentang pelajaran ini" /></label>
+      <label className="field-label">Warna identitas<input className="form-control color-input" type="color" name="color" defaultValue={item?.color?.startsWith('#') ? item.color : '#D5735B'} /></label>
+      <div className="form-two"><label className="field-label">Hari belajar<select name="day" className="form-control" defaultValue={item?.schedule?.[0]?.day || ''}><option value="">Pilih hari (opsional)</option>{['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'].map((day)=><option key={day}>{day}</option>)}</select></label><label className="field-label">Lokasi belajar<input className="form-control" name="room" defaultValue={item?.schedule?.[0]?.room || ''} placeholder="Opsional" /></label></div>
+      <div className="form-two"><label className="field-label">Mulai<input className="form-control" type="time" name="start" defaultValue={item?.schedule?.[0]?.start || ''}/></label><label className="field-label">Selesai<input className="form-control" type="time" name="end" defaultValue={item?.schedule?.[0]?.end || ''}/></label></div>
+    </> : <>
       {(isTask || isNote || isCalendar || page === 'Pengingat') && <label className="field-label">{isNote || isTask ? 'Deskripsi' : 'Keterangan'}<textarea className="form-control textarea-control" name="description" rows="3" defaultValue={item?.description || ''}/></label>}
-      {(isTask || isNote) && <label className="field-label">Mata kuliah<select name="subject" className="form-control" defaultValue={item?.subject || ''}><option value="">Tanpa mata kuliah</option>{subjects.map((subject)=><option key={subject.id}>{subject.name}</option>)}</select></label>}
+      {(isTask || isNote) && <label className="field-label">Mata pelajaran<select name="subject" className="form-control" defaultValue={item?.subject || ''}><option value="">Tanpa mata pelajaran</option>{subjects.map((subject)=><option key={subject.id}>{subject.name}</option>)}</select></label>}
       {(isTask || isCalendar || page === 'Pengingat') && <div className="form-two"><label className="field-label">Tanggal<input className="form-control" type="date" name={isTask ? 'deadline' : 'date'} defaultValue={item?.deadline || item?.date || today()} required/></label><label className="field-label">Jam<input className="form-control" type="time" name="time" defaultValue={item?.time || ''}/></label></div>}
       {isTask && <div className="form-two"><label className="field-label">Prioritas<select name="priority" className="form-control" defaultValue={item?.priority || 'Sedang'}>{['Rendah','Sedang','Tinggi'].map((value)=><option key={value}>{value}</option>)}</select></label><label className="field-label">Status<select name="status" className="form-control" defaultValue={item?.status || (item?.done ? 'Selesai' : 'Belum dikerjakan')}>{['Belum dikerjakan','Sedang dikerjakan','Selesai'].map((value)=><option key={value}>{value}</option>)}</select></label></div>}
     </>}
