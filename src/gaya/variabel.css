@@ -1,0 +1,63 @@
+/* Font dan token warna StudyFlow */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Plus Jakarta Sans',sans-serif;
+  color: var(--text);
+  background: var(--background);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --ink: var(--text);
+  --muted: var(--text-muted);
+  --purple: var(--primary);
+  --line: var(--border);
+  --panel: var(--surface);
+  --canvas: var(--background);
+  --soft: #f8ebe6;
+  color-scheme: light;
+  --terra: var(--primary);
+  --sage: var(--secondary);
+  --accent: #d49a43;
+  --accent-dark: #a9422e;
+  --accent-soft: #faece7;
+  --primary: #c9563d;
+  --primary-strong: #a9422e;
+  --secondary: #4d7260;
+  --background: #faf7f4;
+  --surface: #fff;
+  --text: #292522;
+  --text-muted: #8d857e;
+  --border: #ece2dc;
+  --shadow: 0 8px 24px #50321b0d;
+  --radius-card: var(--radius);
+  --radius: 17px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: var(--text);
+  --muted: var(--text-muted);
+  --line: var(--border);
+  --panel: var(--surface);
+  --canvas: var(--background);
+  --soft: #382823;
+  background: var(--canvas);
+  --purple: var(--primary);
+  --terra: var(--primary);
+  --sage: var(--secondary);
+  --accent: #e8c276;
+  --accent-dark: #c9563d;
+  --accent-soft: #382823;
+  --primary: #e07a5f;
+  --primary-strong: #c9563d;
+  --secondary: #83a893;
+  --background: #1c1917;
+  --surface: #25211f;
+  --text: #f1eae5;
+  --text-muted: #b6a9a0;
+  --border: #413a36;
+  --shadow: 0 8px 24px #0003;
+}
+

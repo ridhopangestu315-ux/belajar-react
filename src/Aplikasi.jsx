@@ -62,8 +62,8 @@ function migrasikanDataBelajar() {
       const legacyColors = { terra:'#D5735B', sage:'#4D7260', amber:'#D49A43', teal:'#4D8A83' }
       return { ...data, teacher: data.teacher || lecturer || '', category: data.category || data.field || 'Umum', level: data.level || '', description: data.description || '', code: data.code || '', color: data.color?.startsWith('#') ? data.color : legacyColors[data.color] || '#D5735B', schedule: rapikanJadwal(data.schedule, room) }
     }
-    const subjects = [...currentSubjects, ...oldCourses].map(rapikanMataPelajaran)
-    const uniqueSubjects = subjects.filter((subject, index, list) => list.findIndex((item) => (item.id && item.id === subject.id) || item.name?.toLowerCase() === subject.name?.toLowerCase()) === index)
+    const daftarMataPelajaran = [...currentSubjects, ...oldCourses].map(rapikanMataPelajaran)
+    const uniqueSubjects = daftarMataPelajaran.filter((subject, index, list) => list.findIndex((item) => (item.id && item.id === subject.id) || item.name?.toLowerCase() === subject.name?.toLowerCase()) === index)
     const existingTasks = uraiDaftar('studyflow_tasks')
     const existingNotes = uraiDaftar('studyflow_notes')
     const existingReminders = uraiDaftar('studyflow_reminders')
@@ -93,9 +93,9 @@ function migrasikanDataBelajar() {
       return { ...data, subject: task.subject || courseName || linkedSubject?.name || '', deadline: task.deadline || dueDate || '', time: task.time || dueTime || '', description, done, status: task.status || (done ? 'Selesai' : 'Belum dikerjakan') }
     })
     if (hasLearningData && existingTasks.length) localStorage.setItem('studyflow_tasks', JSON.stringify(normalizedTasks))
-    const settings = localStorage.getItem('studyflow_settings')
-    if (settings) {
-      try { localStorage.setItem('studyflow_settings', JSON.stringify({ educationLevel:'', classLevel:'', institution:'', ...JSON.parse(settings) })) } catch { /* Biarkan pengait memakai nilai awal jika data pengaturan rusak. */ }
+    const pengaturan = localStorage.getItem('studyflow_settings')
+    if (pengaturan) {
+      try { localStorage.setItem('studyflow_settings', JSON.stringify({ educationLevel:'', classLevel:'', institution:'', ...JSON.parse(pengaturan) })) } catch { /* Biarkan pengait memakai nilai awal jika data pengaturan rusak. */ }
     }
     localStorage.setItem('studyflow_universal_v1', 'true')
   } catch { /* Jika penyimpanan tidak tersedia, aplikasi tetap memakai nilai di memori. */ }
@@ -106,48 +106,48 @@ migrasikanDataBelajar()
 function Aplikasi() {
   const [halamanAktif, aturHalamanAktif] = useState('Dashboard')
   const [apakahBilahSampingTerbuka, aturBilahSamping] = useState(false)
-  const [tasks, setTasks] = usePenyimpananLokal('studyflow_tasks', sampleTasks)
-  const [subjects, setSubjects] = usePenyimpananLokal('studyflow_subjects', sampleSubjects)
-  const [notes, setNotes] = usePenyimpananLokal('studyflow_notes', sampleNotes)
-  const [reminders, setReminders] = usePenyimpananLokal('studyflow_reminders', sampleReminders)
-  const [activities, setActivities] = usePenyimpananLokal('studyflow_activities', sampleActivities)
-  const [settings, setSettings] = usePenyimpananLokal('studyflow_settings', { name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
+  const [daftarTugas, aturDaftarTugas] = usePenyimpananLokal('studyflow_tasks', sampleTasks)
+  const [daftarMataPelajaran, aturDaftarMataPelajaran] = usePenyimpananLokal('studyflow_subjects', sampleSubjects)
+  const [daftarCatatan, aturDaftarCatatan] = usePenyimpananLokal('studyflow_notes', sampleNotes)
+  const [daftarPengingat, aturDaftarPengingat] = usePenyimpananLokal('studyflow_reminders', sampleReminders)
+  const [daftarAktivitas, aturDaftarAktivitas] = usePenyimpananLokal('studyflow_activities', sampleActivities)
+  const [pengaturan, aturPengaturan] = usePenyimpananLokal('studyflow_settings', { name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
   const [modal, setModal] = useState(null)
-  const [search, setSearch] = useState('')
-  const [taskFilter, setTaskFilter] = useState('Semua tugas')
-  const [subjectFilter, setSubjectFilter] = useState('Semua bidang')
-  const [selisihBulan, setMonthOffset] = useState(0)
-  const [modeTimer, setTimerMode] = usePenyimpananLokal('studyflow_timer_mode', 'Fokus')
-  const [sisaDetik, setSecondsLeft] = usePenyimpananLokal('studyflow_timer_seconds', (settings.focusMinutes || 25) * 60)
-  const [durasiTimerDetik, setTimerDurationSeconds] = usePenyimpananLokal('studyflow_timer_duration_seconds', (settings.focusMinutes || 25) * 60)
-  const [timerBerjalan, setTimerRunning] = usePenyimpananLokal('studyflow_timer_running', false)
-  const [jumlahSesiFokus, setFocusSessions] = usePenyimpananLokal('studyflow_focus_sessions', 0)
-  const [riwayatFokus, setFocusHistory] = usePenyimpananLokal('studyflow_focus_history', [])
-  const [pemberitahuanTimer, setTimerNotice] = useState('')
-  const [toast, setToast] = useState('')
+  const [kataPencarian, aturKataPencarian] = useState('')
+  const [filterTugas, aturFilterTugas] = useState('Semua tugas')
+  const [filterMataPelajaran, aturFilterMataPelajaran] = useState('Semua bidang')
+  const [selisihBulan, aturSelisihBulan] = useState(0)
+  const [modeTimer, aturModeTimer] = usePenyimpananLokal('studyflow_timer_mode', 'Fokus')
+  const [sisaDetik, aturSisaDetik] = usePenyimpananLokal('studyflow_timer_seconds', (pengaturan.focusMinutes || 25) * 60)
+  const [durasiTimerDetik, aturDurasiTimerDetik] = usePenyimpananLokal('studyflow_timer_duration_seconds', (pengaturan.focusMinutes || 25) * 60)
+  const [timerBerjalan, aturTimerBerjalan] = usePenyimpananLokal('studyflow_timer_running', false)
+  const [jumlahSesiFokus, aturJumlahSesiFokus] = usePenyimpananLokal('studyflow_focus_sessions', 0)
+  const [riwayatFokus, aturRiwayatFokus] = usePenyimpananLokal('studyflow_focus_history', [])
+  const [pemberitahuanTimer, aturPemberitahuanTimer] = useState('')
+  const [toast, aturNotifikasi] = useState('')
   const [modalProfilTerbuka, aturModalProfil] = useState(false)
-  const [tanggalSaatIni, setCurrentDate] = useState(() => new Date())
+  const [tanggalSaatIni, aturTanggalSaatIni] = useState(() => new Date())
   const statistikSudahDianimasikan = useRef(false)
   const penyelesaianTimerSudahDitangani = useRef(false)
 
-  const apakahTemaGelap = settings.theme === 'dark' || (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  const jumlahTugasSelesai = tasks.filter((task) => task.done).length
-  const jumlahTugasAktif = tasks.length - jumlahTugasSelesai
-  const progress = tasks.length ? Math.round((jumlahTugasSelesai / tasks.length) * 100) : 0
-  const daftarTugasTerurut = useMemo(() => [...tasks].sort((a, b) => Number(a.done) - Number(b.done) || (a.deadline || '9999').localeCompare(b.deadline || '9999')), [tasks])
+  const apakahTemaGelap = pengaturan.theme === 'dark' || (pengaturan.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const jumlahTugasSelesai = daftarTugas.filter((task) => task.done).length
+  const jumlahTugasAktif = daftarTugas.length - jumlahTugasSelesai
+  const progress = daftarTugas.length ? Math.round((jumlahTugasSelesai / daftarTugas.length) * 100) : 0
+  const daftarTugasTerurut = useMemo(() => [...daftarTugas].sort((a, b) => Number(a.done) - Number(b.done) || (a.deadline || '9999').localeCompare(b.deadline || '9999')), [daftarTugas])
 
   useEffect(() => {
     if (halamanAktif === 'Dashboard') statistikSudahDianimasikan.current = true
   }, [halamanAktif])
 
   useEffect(() => {
-    const clockId = window.setInterval(() => setCurrentDate(new Date()), 60_000)
+    const clockId = window.setInterval(() => aturTanggalSaatIni(new Date()), 60_000)
     return () => window.clearInterval(clockId)
   }, [])
 
   useEffect(() => {
     const terapkanTema = () => {
-      const theme = settings.theme || 'system'
+      const theme = pengaturan.theme || 'system'
       const dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
       document.documentElement.dataset.theme = dark ? 'dark' : 'light'
       document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
@@ -156,31 +156,31 @@ function Aplikasi() {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     media.addEventListener('change', terapkanTema)
     return () => media.removeEventListener('change', terapkanTema)
-  }, [settings.theme])
+  }, [pengaturan.theme])
 
   // Timer disimpan di state utama agar tidak diatur ulang saat berpindah halaman.
   useEffect(() => {
     if (!timerBerjalan) return undefined
     if (sisaDetik <= 0) {
-      setTimerRunning(false)
+      aturTimerBerjalan(false)
       if (!penyelesaianTimerSudahDitangani.current) {
         penyelesaianTimerSudahDitangani.current = true
         const completedAt = new Date()
         const record = { id: buatId(), completedAt: completedAt.toISOString(), completedDate: ubahKeKunciTanggalLokal(completedAt), durationSeconds: durasiTimerDetik, type: modeTimer }
-        setFocusHistory((history) => [record, ...history])
-        if (modeTimer === 'Fokus') setFocusSessions((count) => count + 1)
+        aturRiwayatFokus((history) => [record, ...history])
+        if (modeTimer === 'Fokus') aturJumlahSesiFokus((count) => count + 1)
         window.dispatchEvent(new CustomEvent('studyflow:timer-done', { detail: modeTimer }))
       }
       return undefined
     }
-    const timerId = window.setTimeout(() => setSecondsLeft((seconds) => Math.max(0, seconds - 1)), 1000)
+    const timerId = window.setTimeout(() => aturSisaDetik((seconds) => Math.max(0, seconds - 1)), 1000)
     return () => window.clearTimeout(timerId)
-  }, [timerBerjalan, sisaDetik, modeTimer, durasiTimerDetik, setFocusHistory, setFocusSessions, setSecondsLeft, setTimerRunning])
+  }, [timerBerjalan, sisaDetik, modeTimer, durasiTimerDetik, aturRiwayatFokus, aturJumlahSesiFokus, aturSisaDetik, aturTimerBerjalan])
 
   useEffect(() => {
     function tampilkanPemberitahuanTimer(event) {
-      setTimerNotice(`${event.detail} selesai. Saatnya ${event.detail === 'Fokus' ? 'istirahat sejenak' : 'kembali belajar'}!`)
-      window.setTimeout(() => setTimerNotice(''), 5000)
+      aturPemberitahuanTimer(`${event.detail} selesai. Saatnya ${event.detail === 'Fokus' ? 'istirahat sejenak' : 'kembali belajar'}!`)
+      window.setTimeout(() => aturPemberitahuanTimer(''), 5000)
     }
     window.addEventListener('studyflow:timer-done', tampilkanPemberitahuanTimer)
     return () => window.removeEventListener('studyflow:timer-done', tampilkanPemberitahuanTimer)
@@ -193,85 +193,85 @@ function Aplikasi() {
   function simpanData(formData) {
     const { page, item } = modal
     const id = item?.id || buatId()
-    const addActivity = (text) => setActivities((list) => [{ id: buatId(), text, date: tanggalHariIni() }, ...list].slice(0, 12))
+    const addActivity = (text) => aturDaftarAktivitas((list) => [{ id: buatId(), text, date: tanggalHariIni() }, ...list].slice(0, 12))
     if (page === 'Tugas') {
       const taskData = { ...formData, done: formData.status === 'Selesai' }
-      setTasks((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...taskData } : entry) : [...list, { ...taskData, id }])
+      aturDaftarTugas((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...taskData } : entry) : [...list, { ...taskData, id }])
       if (!item) addActivity(`Menambahkan tugas ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“${formData.title}ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â`)
     } else if (page === 'Mata Pelajaran') {
       const subjectData = { ...formData, teacher: formData.teacher || '', category: formData.category || 'Umum', level: formData.level || '', description: formData.description || '', code: formData.code || '' }
-      setSubjects((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...subjectData } : entry) : [...list, { ...subjectData, id }])
+      aturDaftarMataPelajaran((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...subjectData } : entry) : [...list, { ...subjectData, id }])
     }
-    else if (page === 'Catatan') setNotes((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, createdAt: tanggalHariIni() }])
-    else if (page === 'Pengingat') setReminders((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, done: false }])
-    else if (page === 'Kalender') setActivities((list) => [{ ...formData, id, date: formData.date || tanggalHariIni(), type: 'Kegiatan' }, ...list])
+    else if (page === 'Catatan') aturDaftarCatatan((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, createdAt: tanggalHariIni() }])
+    else if (page === 'Pengingat') aturDaftarPengingat((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, done: false }])
+    else if (page === 'Kalender') aturDaftarAktivitas((list) => [{ ...formData, id, date: formData.date || tanggalHariIni(), type: 'Kegiatan' }, ...list])
     setModal(null)
     tampilkanNotifikasi(`${item ? 'Perubahan' : 'Data'} berhasil disimpan.`)
   }
 
   function tampilkanNotifikasi(message) {
-    setToast(message)
-    window.setTimeout(() => setToast(''), 2800)
+    aturNotifikasi(message)
+    window.setTimeout(() => aturNotifikasi(''), 2800)
   }
 
   function hapusData(page, id) {
     if (!window.confirm('Hapus item ini? Data terkait yang sudah tersimpan akan tetap ada.')) return
-    const setter = { Tugas: setTasks, 'Mata Pelajaran': setSubjects, Catatan: setNotes, Pengingat: setReminders }[page]
+    const setter = { Tugas: aturDaftarTugas, 'Mata Pelajaran': aturDaftarMataPelajaran, Catatan: aturDaftarCatatan, Pengingat: aturDaftarPengingat }[page]
     if (setter) setter((list) => list.filter((item) => item.id !== id))
   }
 
   function ubahStatusTugas(id) {
-    const task = tasks.find((entry) => entry.id === id)
-    setTasks((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done, status: entry.done ? 'Belum dikerjakan' : 'Selesai' } : entry))
+    const task = daftarTugas.find((entry) => entry.id === id)
+    aturDaftarTugas((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done, status: entry.done ? 'Belum dikerjakan' : 'Selesai' } : entry))
     if (task && !task.done) tampilkanNotifikasi('Tugas selesai. Kerja bagus!')
   }
 
   function ubahModeTimer(mode) {
     penyelesaianTimerSudahDitangani.current = false
-    setTimerMode(mode)
-    const minutes = mode === 'Fokus' ? settings.focusMinutes : mode === 'Istirahat panjang' ? settings.longBreak : settings.shortBreak
-    setSecondsLeft(minutes * 60)
-    setTimerDurationSeconds(minutes * 60)
-    setTimerRunning(false)
+    aturModeTimer(mode)
+    const minutes = mode === 'Fokus' ? pengaturan.focusMinutes : mode === 'Istirahat panjang' ? pengaturan.longBreak : pengaturan.shortBreak
+    aturSisaDetik(minutes * 60)
+    aturDurasiTimerDetik(minutes * 60)
+    aturTimerBerjalan(false)
   }
 
   function mulaiTimerFokus() {
     penyelesaianTimerSudahDitangani.current = false
     if (sisaDetik === 0) ubahModeTimer(modeTimer)
-    setTimerRunning(true)
+    aturTimerBerjalan(true)
   }
 
   function mulaiFokusDariDasbor() {
     penyelesaianTimerSudahDitangani.current = false
-    const focusDuration = settings.focusMinutes * 60
-    setTimerMode('Fokus')
-    setTimerDurationSeconds(focusDuration)
-    setSecondsLeft(focusDuration)
-    setTimerRunning(true)
+    const focusDuration = pengaturan.focusMinutes * 60
+    aturModeTimer('Fokus')
+    aturDurasiTimerDetik(focusDuration)
+    aturSisaDetik(focusDuration)
+    aturTimerBerjalan(true)
   }
 
   function aturUlangDataAplikasi() {
     if (!window.confirm('Hapus semua data StudyFlow dari browser ini?')) return
-    setTasks([]); setSubjects([]); setNotes([]); setReminders([]); setActivities([]); setFocusSessions(0); setFocusHistory([]); setTimerRunning(false); setTimerMode('Fokus'); setSecondsLeft(25 * 60); setTimerDurationSeconds(25 * 60); setSettings({ name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
+    aturDaftarTugas([]); aturDaftarMataPelajaran([]); aturDaftarCatatan([]); aturDaftarPengingat([]); aturDaftarAktivitas([]); aturJumlahSesiFokus(0); aturRiwayatFokus([]); aturTimerBerjalan(false); aturModeTimer('Fokus'); aturSisaDetik(25 * 60); aturDurasiTimerDetik(25 * 60); aturPengaturan({ name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
   }
 
   return <div className="app-shell">
-    <BilahSamping halamanAktif={halamanAktif} onNavigate={aturHalamanAktif} isOpen={apakahBilahSampingTerbuka} onClose={() => aturBilahSamping(false)} userName={settings.name} userPhoto={settings.profilePhoto} onProfileClick={() => aturModalProfil(true)} userSummary={[settings.educationLevel, settings.classLevel, settings.institution].filter(Boolean).join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ') || 'Ruang belajarmu'} />
+    <BilahSamping halamanAktif={halamanAktif} onNavigate={aturHalamanAktif} isOpen={apakahBilahSampingTerbuka} onClose={() => aturBilahSamping(false)} userName={pengaturan.name} userPhoto={pengaturan.profilePhoto} onProfileClick={() => aturModalProfil(true)} userSummary={[pengaturan.educationLevel, pengaturan.classLevel, pengaturan.institution].filter(Boolean).join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ') || 'Ruang belajarmu'} />
     <main className="main-area">
-      <header className="topbar"><button className="icon-button mobile-menu" aria-label="Buka navigasi" onClick={() => aturBilahSamping(true)}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-mark">S</span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => setSettings((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{reminders.some((item) => !item.done) && <i/>}</button><AvatarProfil className="avatar-small" name={settings.name} photo={settings.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
+      <header className="topbar"><button className="icon-button mobile-menu" aria-label="Buka navigasi" onClick={() => aturBilahSamping(true)}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-mark">S</span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
       <section className="page-content" key={halamanAktif}>
-        {halamanAktif === 'Dashboard' && <Dasbor name={settings.name} tasks={daftarTugasTerurut} subjects={subjects} activities={activities} jumlahTugasAktif={jumlahTugasAktif} jumlahTugasSelesai={jumlahTugasSelesai} progress={progress} riwayatFokus={riwayatFokus} now={tanggalSaatIni} onToggleTask={ubahStatusTugas} onAddTask={() => bukaFormulirTambah('Tugas')} onNavigate={aturHalamanAktif} onStartFocus={() => { aturHalamanAktif('Focus Mode'); mulaiFokusDariDasbor() }} animateStats={!statistikSudahDianimasikan.current}/>}
-        {pageToData[halamanAktif] && <HalamanData page={halamanAktif} data={({ Tugas: daftarTugasTerurut, 'Mata Pelajaran': subjects, Catatan: notes, Pengingat: [...reminders].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[halamanAktif]} search={search} setSearch={setSearch} filter={taskFilter} setFilter={setTaskFilter} subjectFilter={subjectFilter} setSubjectFilter={setSubjectFilter} onAdd={() => bukaFormulirTambah()} onEdit={(item) => bukaFormulirTambah(halamanAktif, item)} onDelete={(id) => hapusData(halamanAktif, id)} onToggle={(id) => halamanAktif === 'Tugas' ? ubahStatusTugas(id) : setReminders((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
-        {halamanAktif === 'Kalender' && <HalamanKalender tasks={tasks} subjects={subjects} activities={activities} selisihBulan={selisihBulan} setMonthOffset={setMonthOffset} now={tanggalSaatIni} onAdd={() => bukaFormulirTambah('Kalender')}/>}
-        {halamanAktif === 'Focus Mode' && <HalamanFokus mode={modeTimer} seconds={sisaDetik} running={timerBerjalan} sessions={jumlahSesiFokus} history={riwayatFokus} onMode={ubahModeTimer} onRun={mulaiTimerFokus} onPause={() => setTimerRunning(false)} onReset={() => { setTimerRunning(false); ubahModeTimer(modeTimer) }}/ >}
-        {halamanAktif === 'Progress Belajar' && <HalamanProgres tasks={tasks} subjects={subjects} sessions={jumlahSesiFokus} riwayatFokus={riwayatFokus} activities={activities} now={tanggalSaatIni}/>}
-        {halamanAktif === 'Pengaturan' && <HalamanPengaturan settings={settings} setSettings={setSettings} onReset={aturUlangDataAplikasi}/>}
+        {halamanAktif === 'Dashboard' && <Dasbor name={pengaturan.name} daftarTugas={daftarTugasTerurut} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} jumlahTugasAktif={jumlahTugasAktif} jumlahTugasSelesai={jumlahTugasSelesai} progress={progress} riwayatFokus={riwayatFokus} now={tanggalSaatIni} onToggleTask={ubahStatusTugas} onAddTask={() => bukaFormulirTambah('Tugas')} onNavigate={aturHalamanAktif} onStartFocus={() => { aturHalamanAktif('Focus Mode'); mulaiFokusDariDasbor() }} animateStats={!statistikSudahDianimasikan.current}/>}
+        {pageToData[halamanAktif] && <HalamanData page={halamanAktif} data={({ Tugas: daftarTugasTerurut, 'Mata Pelajaran': daftarMataPelajaran, Catatan: daftarCatatan, Pengingat: [...daftarPengingat].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[halamanAktif]} kataPencarian={kataPencarian} aturKataPencarian={aturKataPencarian} filter={filterTugas} setFilter={aturFilterTugas} filterMataPelajaran={filterMataPelajaran} aturFilterMataPelajaran={aturFilterMataPelajaran} onAdd={() => bukaFormulirTambah()} onEdit={(item) => bukaFormulirTambah(halamanAktif, item)} onDelete={(id) => hapusData(halamanAktif, id)} onToggle={(id) => halamanAktif === 'Tugas' ? ubahStatusTugas(id) : aturDaftarPengingat((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
+        {halamanAktif === 'Kalender' && <HalamanKalender daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} selisihBulan={selisihBulan} aturSelisihBulan={aturSelisihBulan} now={tanggalSaatIni} onAdd={() => bukaFormulirTambah('Kalender')}/>}
+        {halamanAktif === 'Focus Mode' && <HalamanFokus mode={modeTimer} seconds={sisaDetik} running={timerBerjalan} sessions={jumlahSesiFokus} history={riwayatFokus} onMode={ubahModeTimer} onRun={mulaiTimerFokus} onPause={() => aturTimerBerjalan(false)} onReset={() => { aturTimerBerjalan(false); ubahModeTimer(modeTimer) }}/ >}
+        {halamanAktif === 'Progress Belajar' && <HalamanProgres daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} sessions={jumlahSesiFokus} riwayatFokus={riwayatFokus} daftarAktivitas={daftarAktivitas} now={tanggalSaatIni}/>}
+        {halamanAktif === 'Pengaturan' && <HalamanPengaturan pengaturan={pengaturan} aturPengaturan={aturPengaturan} onReset={aturUlangDataAplikasi}/>}
       </section>
     </main>
-    {modal && <FormulirData modal={modal} subjects={subjects} onClose={() => setModal(null)} onSave={simpanData}/>}
-    {modalProfilTerbuka && <ModalFotoProfil name={settings.name} photo={settings.profilePhoto || ''} onClose={() => aturModalProfil(false)} onSave={(profilePhoto) => { setSettings((value) => ({ ...value, profilePhoto })); aturModalProfil(false); tampilkanNotifikasi(profilePhoto ? 'Foto profil berhasil diperbarui.' : 'Foto profil dihapus.') }}/>} 
+    {modal && <FormulirData modal={modal} daftarMataPelajaran={daftarMataPelajaran} onClose={() => setModal(null)} onSave={simpanData}/>}
+    {modalProfilTerbuka && <ModalFotoProfil name={pengaturan.name} photo={pengaturan.profilePhoto || ''} onClose={() => aturModalProfil(false)} onSave={(profilePhoto) => { aturPengaturan((value) => ({ ...value, profilePhoto })); aturModalProfil(false); tampilkanNotifikasi(profilePhoto ? 'Foto profil berhasil diperbarui.' : 'Foto profil dihapus.') }}/>} 
     <NavigasiMobile halamanAktif={halamanAktif} onNavigate={aturHalamanAktif}/>
-    {(pemberitahuanTimer || toast) && <div className="timer-notice toast-enter" role="status"><CheckCircle2 size={18}/>{pemberitahuanTimer || toast}<button onClick={() => { setTimerNotice(''); setToast('') }} aria-label="Tutup pemberitahuan"><X size={16}/></button></div>}
+    {(pemberitahuanTimer || toast) && <div className="timer-notice toast-enter" role="status"><CheckCircle2 size={18}/>{pemberitahuanTimer || toast}<button onClick={() => { aturPemberitahuanTimer(''); aturNotifikasi('') }} aria-label="Tutup pemberitahuan"><X size={16}/></button></div>}
   </div>
 }
 
