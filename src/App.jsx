@@ -7,6 +7,8 @@ import { ProgressPage } from './pages/ProgressPage.jsx'
 import { SettingsPage } from './pages/SettingsPage.jsx'
 import { ItemModal } from './components/ItemModal.jsx'
 import MobileNav from './components/MobileNav.jsx'
+import ProfileAvatar from './components/ProfileAvatar.jsx'
+import ProfilePhotoModal from './components/ProfilePhotoModal.jsx'
 import { CalendarPage, DataPage } from './pages/PlanningPages.jsx'
 import { useLocalStorage } from './hooks/useLocalStorage.js'
 import { addLocalDays, toLocalDateKey } from './utils/date.js'
@@ -123,6 +125,7 @@ function App() {
   const [focusHistory, setFocusHistory] = useLocalStorage('studyflow_focus_history', [])
   const [timerNotice, setTimerNotice] = useState('')
   const [toast, setToast] = useState('')
+  const [profileModalOpen, setProfileModalOpen] = useState(false)
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const hasAnimatedStats = useRef(false)
   const timerCompletionHandled = useRef(false)
@@ -193,7 +196,7 @@ function App() {
     if (page === 'Tugas') {
       const taskData = { ...formData, done: formData.status === 'Selesai' }
       setTasks((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...taskData } : entry) : [...list, { ...taskData, id }])
-      if (!item) addActivity(`Menambahkan tugas “${formData.title}”`)
+      if (!item) addActivity(`Menambahkan tugas ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“${formData.title}ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â`)
     } else if (page === 'Mata Pelajaran') {
       const subjectData = { ...formData, teacher: formData.teacher || '', category: formData.category || 'Umum', level: formData.level || '', description: formData.description || '', code: formData.code || '' }
       setSubjects((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...subjectData } : entry) : [...list, { ...subjectData, id }])
@@ -252,9 +255,9 @@ function App() {
   }
 
   return <div className="app-shell">
-    <Sidebar activePage={activePage} onNavigate={setActivePage} isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} userName={settings.name} userSummary={[settings.educationLevel, settings.classLevel, settings.institution].filter(Boolean).join(' · ') || 'Ruang belajarmu'} />
+    <Sidebar activePage={activePage} onNavigate={setActivePage} isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} userName={settings.name} userPhoto={settings.profilePhoto} onProfileClick={() => setProfileModalOpen(true)} userSummary={[settings.educationLevel, settings.classLevel, settings.institution].filter(Boolean).join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ') || 'Ruang belajarmu'} />
     <main className="main-area">
-      <header className="topbar"><button className="icon-button mobile-menu" aria-label="Buka navigasi" onClick={() => setSidebarOpen(true)}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-mark">S</span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{activePage}</strong></div><div className="topbar-actions"><button className="icon-button theme-toggle" aria-label="Ganti tema" title="Ganti tema" onClick={() => setSettings((value) => ({ ...value, theme: document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark' }))}>{document.documentElement.dataset.theme === 'dark' ? <Sun size={18}/> : <Moon size={18}/>}</button><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => setActivePage('Pengingat')}><Bell size={19}/>{reminders.some((item) => !item.done) && <i/>}</button><div className="avatar avatar-small">{(settings.name || 'S').slice(0, 1).toUpperCase()}</div></div></header>
+      <header className="topbar"><button className="icon-button mobile-menu" aria-label="Buka navigasi" onClick={() => setSidebarOpen(true)}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-mark">S</span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{activePage}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label="Ganti tema" title="Ganti tema" onClick={() => setSettings((value) => ({ ...value, theme: document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark' }))}>{document.documentElement.dataset.theme === 'dark' ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => setActivePage('Pengingat')}><Bell size={19}/>{reminders.some((item) => !item.done) && <i/>}</button><ProfileAvatar className="avatar-small" name={settings.name} photo={settings.profilePhoto} onClick={() => setProfileModalOpen(true)}/></div></header>
       <section className="page-content" key={activePage}>
         {activePage === 'Dashboard' && <Dashboard name={settings.name} tasks={sortedTasks} subjects={subjects} activities={activities} openTasks={openTasks} completedTasks={completedTasks} progress={progress} focusHistory={focusHistory} now={currentDate} onToggleTask={toggleTask} onAddTask={() => openCreateForm('Tugas')} onNavigate={setActivePage} onStartFocus={() => { setActivePage('Focus Mode'); startFocusFromDashboard() }} animateStats={!hasAnimatedStats.current}/>}
         {pageToData[activePage] && <DataPage page={activePage} data={({ Tugas: sortedTasks, 'Mata Pelajaran': subjects, Catatan: notes, Pengingat: [...reminders].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[activePage]} search={search} setSearch={setSearch} filter={taskFilter} setFilter={setTaskFilter} subjectFilter={subjectFilter} setSubjectFilter={setSubjectFilter} onAdd={() => openCreateForm()} onEdit={(item) => openCreateForm(activePage, item)} onDelete={(id) => removeItem(activePage, id)} onToggle={(id) => activePage === 'Tugas' ? toggleTask(id) : setReminders((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
@@ -265,6 +268,7 @@ function App() {
       </section>
     </main>
     {modal && <ItemModal modal={modal} subjects={subjects} onClose={() => setModal(null)} onSave={saveItem}/>}
+    {profileModalOpen && <ProfilePhotoModal name={settings.name} photo={settings.profilePhoto || ''} onClose={() => setProfileModalOpen(false)} onSave={(profilePhoto) => { setSettings((value) => ({ ...value, profilePhoto })); setProfileModalOpen(false); tampilkanNotifikasi(profilePhoto ? 'Foto profil berhasil diperbarui.' : 'Foto profil dihapus.') }}/>} 
     <MobileNav activePage={activePage} onNavigate={setActivePage}/>
     {(timerNotice || toast) && <div className="timer-notice toast-enter" role="status"><CheckCircle2 size={18}/>{timerNotice || toast}<button onClick={() => { setTimerNotice(''); setToast('') }} aria-label="Tutup pemberitahuan"><X size={16}/></button></div>}
   </div>
