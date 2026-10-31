@@ -1,0 +1,33 @@
+.note-card-clickable { cursor: pointer; }
+.note-card-clickable:focus-visible { outline: 3px solid #dca28f; outline-offset: 3px; }
+.pembaca-catatan-overlay { position: fixed; z-index: 90; inset: 0; overflow: auto; background: var(--background); color: var(--text); animation: pembaca-muncul .2s ease both; }
+.pembaca-catatan { min-height: 100%; display: flex; flex-direction: column; background: var(--background); }
+.pembaca-catatan-header { position: sticky; z-index: 1; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; padding: 12px clamp(18px, 5vw, 64px); background: var(--surface); border-bottom: 1px solid var(--border); }
+.pembaca-catatan-kembali { display: inline-flex; align-items: center; gap: 9px; min-height: 38px; padding: 0 10px; color: var(--text-muted); background: transparent; border: 0; border-radius: 10px; font: inherit; font-size: 13px; cursor: pointer; transition: color .18s ease, background-color .18s ease, transform .12s ease; }
+.pembaca-catatan-kembali:hover { color: var(--primary-strong); background: var(--accent-soft); }
+.pembaca-catatan-kembali:active { transform: scale(.97); }
+.pembaca-catatan-actions { display: flex; align-items: center; gap: 8px; }
+.pembaca-catatan-actions .secondary-button,.pembaca-catatan-actions .danger-button { height: 36px; margin: 0; }
+.pembaca-catatan-hapus { border: 1px solid #f0d5d2; }
+.pembaca-catatan-konten { width: min(100% - 40px, 790px); margin: 0 auto; padding: clamp(42px, 9vh, 92px) 0 80px; }
+.pembaca-catatan-subjek { display: inline-block; margin-bottom: 16px; color: var(--primary-strong); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.pembaca-catatan-konten h1 { max-width: 760px; margin: 0; color: var(--text); font: 700 clamp(30px, 5vw, 48px)/1.18 Manrope, sans-serif; letter-spacing: -.04em; overflow-wrap: anywhere; }
+.pembaca-catatan-tanggal { display: flex; flex-wrap: wrap; gap: 9px 22px; margin-top: 22px; padding-bottom: 22px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.pembaca-catatan-tanggal span { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
+.pembaca-catatan-tanggal svg { color: var(--primary); }
+.pembaca-catatan-isi { padding-top: 28px; color: var(--text); font-size: 16px; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+:root[data-theme="dark"] .pembaca-catatan-header { background: var(--surface); }
+:root[data-theme="dark"] .pembaca-catatan-hapus { color: #f0aaa1; background: #432c29; border-color: #5a3732; }
+@keyframes pembaca-muncul { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 600px) {
+  .pembaca-catatan-header { min-height: 62px; padding: 9px 12px; gap: 6px; }
+  .pembaca-catatan-kembali { gap: 5px; padding: 0 5px; font-size: 11px; }
+  .pembaca-catatan-actions { gap: 5px; }
+  .pembaca-catatan-actions .secondary-button,.pembaca-catatan-actions .danger-button { height: 34px; padding: 0 10px; font-size: 11px; }
+  .pembaca-catatan-konten { width: calc(100% - 36px); padding: 45px 0 calc(44px + env(safe-area-inset-bottom)); }
+  .pembaca-catatan-konten h1 { font-size: clamp(28px, 8vw, 38px); }
+  .pembaca-catatan-tanggal { display: grid; gap: 10px; margin-top: 17px; padding-bottom: 18px; }
+  .pembaca-catatan-tanggal span { font-size: 11px; }
+  .pembaca-catatan-isi { padding-top: 22px; font-size: 15px; line-height: 1.85; }
+}
+@media (prefers-reduced-motion: reduce) { .pembaca-catatan-overlay { animation: none; } }

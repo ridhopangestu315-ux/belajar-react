@@ -59,7 +59,7 @@ function DialogKonfirmasi({ konfirmasi, selesaikanKonfirmasi, tampilkanNotifikas
   }
 
   return <div className="studyflow-confirm-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) selesaikanKonfirmasi(false) }}>
-    <section className="studyflow-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="studyflow-confirm-title" aria-describedby="studyflow-confirm-message" onKeyDown={(event) => { if (event.key === 'Escape') selesaikanKonfirmasi(false) }}>
+    <section className="studyflow-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="studyflow-confirm-title" aria-describedby="studyflow-confirm-message" onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); selesaikanKonfirmasi(false) } }}>
       <span className={`studyflow-confirm-icon studyflow-toast-${konfirmasi.jenis}`} aria-hidden="true"><IkonKonfirmasi size={23}/></span>
       <h2 id="studyflow-confirm-title">{konfirmasi.judul}</h2>
       <p id="studyflow-confirm-message">{konfirmasi.pesan}</p>

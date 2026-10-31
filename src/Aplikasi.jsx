@@ -235,7 +235,7 @@ function Aplikasi() {
       const subjectData = { ...formData, teacher: formData.teacher || '', category: formData.category || 'Umum', level: formData.level || '', description: formData.description || '', code: formData.code || '' }
       aturDaftarMataPelajaran((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...subjectData } : entry) : [...list, { ...subjectData, id }])
     }
-    else if (page === 'Catatan') aturDaftarCatatan((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, createdAt: tanggalHariIni() }])
+    else if (page === 'Catatan') aturDaftarCatatan((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData, updatedAt: tanggalHariIni() } : entry) : [...list, { ...formData, id, createdAt: tanggalHariIni(), updatedAt: tanggalHariIni() }])
     else if (page === 'Pengingat') aturDaftarPengingat((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, done: false }])
     else if (page === 'Kalender') aturDaftarAktivitas((list) => [{ ...formData, id, date: formData.date || tanggalHariIni(), type: 'Kegiatan' }, ...list])
     setModal(null)
@@ -246,10 +246,10 @@ function Aplikasi() {
     const disetujui = await tampilkanKonfirmasi({ judul: 'Hapus data ini?', pesan: 'Data terkait yang sudah tersimpan akan tetap ada.', jenis: 'warning', labelKonfirmasi: 'Ya, hapus' })
     if (!disetujui) return
     const setter = { Tugas: aturDaftarTugas, 'Mata Pelajaran': aturDaftarMataPelajaran, Catatan: aturDaftarCatatan, Pengingat: aturDaftarPengingat }[page]
-    if (setter) {
-      setter((list) => list.filter((item) => item.id !== id))
-      tampilkanNotifikasi('Data berhasil dihapus.')
-    }
+    if (!setter) return false
+    setter((list) => list.filter((item) => item.id !== id))
+    tampilkanNotifikasi('Data berhasil dihapus.')
+    return true
   }
 
   function ubahStatusTugas(id) {

@@ -5,6 +5,8 @@ import './gaya/dasar.css'
 import './gaya/aplikasi.css'
 import './gaya/halaman.css'
 import './gaya/notifikasi.css'
+import './gaya/pembaca-catatan.css'
+import './gaya/editor-catatan.css'
 import Aplikasi from './Aplikasi.jsx'
 
 createRoot(document.getElementById('root')).render(
