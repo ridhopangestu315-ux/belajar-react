@@ -106,6 +106,7 @@ migrasikanDataBelajar()
 function Aplikasi() {
   const [halamanAktif, aturHalamanAktif] = useState('Dashboard')
   const [apakahBilahSampingTerbuka, aturBilahSamping] = useState(false)
+  const [apakahBilahSampingTerlipat, aturBilahSampingTerlipat] = useState(false)
   const [daftarTugas, aturDaftarTugas] = usePenyimpananLokal('studyflow_tasks', sampleTasks)
   const [daftarMataPelajaran, aturDaftarMataPelajaran] = usePenyimpananLokal('studyflow_subjects', sampleSubjects)
   const [daftarCatatan, aturDaftarCatatan] = usePenyimpananLokal('studyflow_notes', sampleNotes)
@@ -186,6 +187,14 @@ function Aplikasi() {
     return () => window.removeEventListener('studyflow:timer-done', tampilkanPemberitahuanTimer)
   }, [])
 
+  function ubahTampilanBilahSamping() {
+    if (window.matchMedia('(min-width: 801px)').matches) {
+      aturBilahSampingTerlipat((terlipat) => !terlipat)
+      return
+    }
+    aturBilahSamping(true)
+  }
+
   function bukaFormulirTambah(page = halamanAktif, item = null) {
     setModal({ page, item })
   }
@@ -255,10 +264,10 @@ function Aplikasi() {
     aturDaftarTugas([]); aturDaftarMataPelajaran([]); aturDaftarCatatan([]); aturDaftarPengingat([]); aturDaftarAktivitas([]); aturJumlahSesiFokus(0); aturRiwayatFokus([]); aturTimerBerjalan(false); aturModeTimer('Fokus'); aturSisaDetik(25 * 60); aturDurasiTimerDetik(25 * 60); aturPengaturan({ name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
   }
 
-  return <div className="app-shell">
+  return <div className={`app-shell ${apakahBilahSampingTerlipat ? 'sidebar-collapsed' : ''}`}>
     <BilahSamping halamanAktif={halamanAktif} onNavigate={aturHalamanAktif} isOpen={apakahBilahSampingTerbuka} onClose={() => aturBilahSamping(false)} userName={pengaturan.name} userPhoto={pengaturan.profilePhoto} onProfileClick={() => aturModalProfil(true)} userSummary={[pengaturan.educationLevel, pengaturan.classLevel, pengaturan.institution].filter(Boolean).join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ') || 'Ruang belajarmu'} />
     <main className="main-area">
-      <header className="topbar"><button className="icon-button mobile-menu" aria-label="Buka navigasi" onClick={() => aturBilahSamping(true)}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-mark">S</span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
+      <header className="topbar"><button className="icon-button mobile-menu" aria-label={apakahBilahSampingTerlipat ? 'Tampilkan menu' : 'Buka navigasi'} onClick={ubahTampilanBilahSamping}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-mark">S</span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
       <section className="page-content" key={halamanAktif}>
         {halamanAktif === 'Dashboard' && <Dasbor name={pengaturan.name} daftarTugas={daftarTugasTerurut} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} jumlahTugasAktif={jumlahTugasAktif} jumlahTugasSelesai={jumlahTugasSelesai} progress={progress} riwayatFokus={riwayatFokus} now={tanggalSaatIni} onToggleTask={ubahStatusTugas} onAddTask={() => bukaFormulirTambah('Tugas')} onNavigate={aturHalamanAktif} onStartFocus={() => { aturHalamanAktif('Focus Mode'); mulaiFokusDariDasbor() }} animateStats={!statistikSudahDianimasikan.current}/>}
         {pageToData[halamanAktif] && <HalamanData page={halamanAktif} data={({ Tugas: daftarTugasTerurut, 'Mata Pelajaran': daftarMataPelajaran, Catatan: daftarCatatan, Pengingat: [...daftarPengingat].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[halamanAktif]} kataPencarian={kataPencarian} aturKataPencarian={aturKataPencarian} filter={filterTugas} setFilter={aturFilterTugas} filterMataPelajaran={filterMataPelajaran} aturFilterMataPelajaran={aturFilterMataPelajaran} onAdd={() => bukaFormulirTambah()} onEdit={(item) => bukaFormulirTambah(halamanAktif, item)} onDelete={(id) => hapusData(halamanAktif, id)} onToggle={(id) => halamanAktif === 'Tugas' ? ubahStatusTugas(id) : aturDaftarPengingat((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
