@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Bell, BookOpen, CalendarDays, Check, CheckCircle2, ChevronLeft, ChevronRight, Circle, Clock3, Menu, Plus, Search, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Bell, CalendarDays, Check, CheckCircle2, ChevronLeft, ChevronRight, Circle, Clock3, Menu, Plus, Search, Sparkles, Target, Trash2, TrendingUp, X } from 'lucide-react'
 import Sidebar from './components/Sidebar.jsx'
 import { useLocalStorage } from './hooks/useLocalStorage.js'
 
@@ -25,6 +25,8 @@ function App() {
   const [timerRunning, setTimerRunning] = useLocalStorage('studyflow_timer_running', false)
   const [focusSessions, setFocusSessions] = useLocalStorage('studyflow_focus_sessions', 0)
   const [timerNotice, setTimerNotice] = useState('')
+  const [toast, setToast] = useState('')
+  const hasAnimatedStats = useRef(false)
 
   const completedTasks = tasks.filter((task) => task.done).length
   const openTasks = tasks.length - completedTasks
@@ -32,7 +34,20 @@ function App() {
   const sortedTasks = useMemo(() => [...tasks].sort((a, b) => Number(a.done) - Number(b.done) || (a.deadline || '9999').localeCompare(b.deadline || '9999')), [tasks])
 
   useEffect(() => {
-    document.documentElement.dataset.theme = settings.theme || 'light'
+    if (activePage === 'Dashboard') hasAnimatedStats.current = true
+  }, [activePage])
+
+  useEffect(() => {
+    const applyTheme = () => {
+      const theme = settings.theme || 'system'
+      const dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+    }
+    applyTheme()
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    media.addEventListener('change', applyTheme)
+    return () => media.removeEventListener('change', applyTheme)
   }, [settings.theme])
 
   // The timer is kept in shared app state, so changing pages does not reset it.
@@ -76,6 +91,12 @@ function App() {
     else if (page === 'Pengingat') setReminders((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, done: false }])
     else if (page === 'Kalender') setActivities((list) => [{ ...formData, id, date: formData.date || today(), type: 'Kegiatan' }, ...list])
     setModal(null)
+    tampilkanNotifikasi(`${item ? 'Perubahan' : 'Data'} berhasil disimpan.`)
+  }
+
+  function tampilkanNotifikasi(message) {
+    setToast(message)
+    window.setTimeout(() => setToast(''), 2800)
   }
 
   function removeItem(page, id) {
@@ -84,7 +105,9 @@ function App() {
   }
 
   function toggleTask(id) {
-    setTasks((list) => list.map((task) => task.id === id ? { ...task, done: !task.done, status: task.done ? 'Belum dikerjakan' : 'Selesai' } : task))
+    const task = tasks.find((entry) => entry.id === id)
+    setTasks((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done, status: entry.done ? 'Belum dikerjakan' : 'Selesai' } : entry))
+    if (task && !task.done) tampilkanNotifikasi('Tugas selesai. Kerja bagus!')
   }
 
   function updateTimerMode(mode) {
@@ -108,8 +131,8 @@ function App() {
     <Sidebar activePage={activePage} onNavigate={setActivePage} isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
     <main className="main-area">
       <header className="topbar"><button className="icon-button mobile-menu" aria-label="Buka navigasi" onClick={() => setSidebarOpen(true)}><Menu size={21}/></button><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{activePage}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button notification-button" aria-label="Pengingat" onClick={() => setActivePage('Pengingat')}><Bell size={19}/>{reminders.some((item) => !item.done) && <i/>}</button><div className="avatar avatar-small">{(settings.name || 'S').slice(0, 1).toUpperCase()}</div></div></header>
-      <section className="page-content">
-        {activePage === 'Dashboard' && <Dashboard name={settings.name} tasks={sortedTasks} subjects={subjects} activities={activities} totalTasks={tasks.length} openTasks={openTasks} completedTasks={completedTasks} progress={progress} onToggleTask={toggleTask} onAddTask={() => openCreateForm('Tugas')} onNavigate={setActivePage}/>}
+      <section className="page-content" key={activePage}>
+        {activePage === 'Dashboard' && <Dashboard name={settings.name} tasks={sortedTasks} subjects={subjects} activities={activities} totalTasks={tasks.length} openTasks={openTasks} completedTasks={completedTasks} progress={progress} onToggleTask={toggleTask} onAddTask={() => openCreateForm('Tugas')} onNavigate={setActivePage} animateStats={!hasAnimatedStats.current}/>}
         {pageToData[activePage] && <DataPage page={activePage} data={({ Tugas: sortedTasks, 'Mata Pelajaran': subjects, Catatan: notes, Pengingat: [...reminders].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[activePage]} search={search} setSearch={setSearch} filter={taskFilter} setFilter={setTaskFilter} onAdd={() => openCreateForm()} onEdit={(item) => openCreateForm(activePage, item)} onDelete={(id) => removeItem(activePage, id)} onToggle={(id) => activePage === 'Tugas' ? toggleTask(id) : setReminders((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
         {activePage === 'Kalender' && <CalendarPage tasks={tasks} subjects={subjects} activities={activities} monthOffset={monthOffset} setMonthOffset={setMonthOffset} onAdd={() => openCreateForm('Kalender')}/>}
         {activePage === 'Focus Mode' && <FocusPage mode={timerMode} seconds={secondsLeft} running={timerRunning} sessions={focusSessions} onMode={updateTimerMode} onRun={startFocusTimer} onPause={() => setTimerRunning(false)} onReset={() => { setTimerRunning(false); updateTimerMode(timerMode) }}/ >}
@@ -118,26 +141,42 @@ function App() {
       </section>
     </main>
     {modal && <ItemModal modal={modal} subjects={subjects} onClose={() => setModal(null)} onSave={saveItem}/>}
-    {timerNotice && <div className="timer-notice"><CheckCircle2 size={18}/>{timerNotice}<button onClick={() => setTimerNotice('')} aria-label="Tutup pemberitahuan"><X size={16}/></button></div>}
+    {(timerNotice || toast) && <div className="timer-notice toast-enter" role="status"><CheckCircle2 size={18}/>{timerNotice || toast}<button onClick={() => { setTimerNotice(''); setToast('') }} aria-label="Tutup pemberitahuan"><X size={16}/></button></div>}
   </div>
 }
 
-function Dashboard({ name, tasks, subjects, activities, totalTasks, openTasks, completedTasks, progress, onToggleTask, onAddTask, onNavigate }) {
+function Dashboard({ name, tasks, subjects, activities, totalTasks, openTasks, completedTasks, progress, onToggleTask, onAddTask, onNavigate, animateStats }) {
   const upcoming = tasks.filter((task) => !task.done).slice(0, 4)
   const weekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date())
   const todayClasses = subjects.flatMap((subject) => (subject.schedule || []).filter((slot) => slot.day === weekday).map((slot) => ({ ...slot, subject })))
   return <>
     <div className="welcome-row"><div><p className="eyebrow">{new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}</p><h1>Selamat {new Date().getHours() < 11 ? 'pagi' : new Date().getHours() < 15 ? 'siang' : 'sore'}{name ? `, ${name}` : ''} <span>✦</span></h1><p className="muted">Siap untuk membuat hari ini lebih produktif?</p></div><button className="primary-button" onClick={onAddTask}><Plus size={18}/>Tambah tugas</button></div>
-    <div className="stats-grid"><StatCard title="Total tugas" value={totalTasks} hint="Semua tugasmu" icon={<CheckCircle2/>} tone="purple"/><StatCard title="Belum selesai" value={openTasks} hint="Tetap semangat!" icon={<Clock3/>} tone="blue"/><StatCard title="Sudah selesai" value={completedTasks} hint="Kerja bagus" icon={<Check/>} tone="green"/><StatCard title="Mata pelajaran" value={subjects.length} hint="Semester ini" icon={<BookOpen size={19}/>} tone="orange"/></div>
-    <div className="dashboard-grid"><section className="panel progress-panel"><div className="panel-heading"><div><p className="eyebrow">PERFORMA</p><h2>Progress belajarmu</h2></div><button className="text-button" onClick={() => onNavigate('Progress Belajar')}>Lihat detail <ChevronRight size={16}/></button></div><div className="progress-content"><div className="progress-ring" style={{ '--progress': `${progress}%` }}><div><strong>{progress}%</strong><span>selesai</span></div></div><div className="progress-legend"><p><i className="legend-dot purple-dot"/>Tugas selesai <strong>{completedTasks}</strong></p><p><i className="legend-dot gray-dot"/>Belum selesai <strong>{openTasks}</strong></p><span className="soft-message"><Sparkles size={16}/>Setiap langkah kecil berarti.</span></div></div></section>
-      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">DEADLINE</p><h2>Tugas terdekat</h2></div><button className="text-button" onClick={() => onNavigate('Tugas')}>Semua tugas <ChevronRight size={16}/></button></div>{upcoming.length ? <div className="task-list">{upcoming.map((task) => <TaskRow key={task.id} task={task} onToggle={onToggleTask}/>)}</div> : <EmptyState text="Belum ada tugas. Tambahkan tugas pertamamu!"/>}</section>
-      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">JADWAL</p><h2>Kuliah hari ini</h2></div><button className="text-button" onClick={() => onNavigate('Mata Pelajaran')}>Lihat jadwal <ChevronRight size={16}/></button></div>{todayClasses.length ? <div className="class-list">{todayClasses.map((slot, index) => <div className="class-row" key={`${slot.subject.id}-${index}`}><span className="class-time">{slot.start || '—'}</span><span className="class-bar" style={{ background: slot.subject.color || '#8170e8' }}/><div><strong>{slot.subject.name}</strong><span>{slot.subject.code || 'Mata pelajaran'} · {slot.room || 'Ruang kuliah'}</span></div></div>)}</div> : <EmptyState text="Belum ada jadwal kuliah untuk hari ini."/>}</section>
-      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">AKTIVITAS</p><h2>Aktivitas belajar</h2></div><TrendingUp size={19} className="subtle-icon"/></div>{activities.length ? <div className="activity-list">{activities.slice(0, 4).map((item) => <div className="activity-row" key={item.id}><span className="activity-mark"><Check size={14}/></span><div><strong>{item.text}</strong><span>{item.date}</span></div></div>)}</div> : <EmptyState text="Aktivitas yang kamu lakukan akan muncul di sini."/>}</section></div>
+    <div className="dashboard-summary"><span className="summary-title">Ringkasan tugas</span><div><strong><CountUp value={totalTasks} active={animateStats}/></strong><small>Total</small></div><div><strong><CountUp value={openTasks} active={animateStats}/></strong><small>Berjalan</small></div><div><strong><CountUp value={completedTasks} active={animateStats}/></strong><small>Selesai</small></div><span className="summary-subjects">{subjects.length} mata pelajaran</span></div>
+    <div className="dashboard-grid"><section className="panel progress-panel"><div className="panel-heading"><div><p className="eyebrow">PERFORMA</p><h2>Progress belajarmu</h2></div><button className="text-button" onClick={() => onNavigate('Progress Belajar')}>Lihat detail <ChevronRight size={16}/></button></div><div className="progress-content"><div className="progress-ring progress-animate" style={{ '--progress': `${progress}%` }}><div><strong>{progress}%</strong><span>selesai</span></div></div><div className="progress-legend"><p><i className="legend-dot purple-dot"/>Tugas selesai <strong>{completedTasks}</strong></p><p><i className="legend-dot gray-dot"/>Belum selesai <strong>{openTasks}</strong></p><span className="soft-message"><Sparkles size={16}/>Setiap langkah kecil berarti.</span></div></div></section>
+      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">DEADLINE</p><h2>Tugas terdekat</h2></div><button className="text-button" onClick={() => onNavigate('Tugas')}>Semua tugas <ChevronRight size={16}/></button></div>{upcoming.length ? <div className="task-list">{upcoming.map((task) => <TaskRow key={task.id} task={task} onToggle={onToggleTask}/>)}</div> : <EmptyState text="Belum ada tugas. Mulai dengan satu langkah kecil hari ini." actionLabel="Tambah tugas" onAction={onAddTask}/>}</section>
+      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">JADWAL</p><h2>Kuliah hari ini</h2></div><button className="text-button" onClick={() => onNavigate('Mata Pelajaran')}>Lihat jadwal <ChevronRight size={16}/></button></div>{todayClasses.length ? <div className="class-list">{todayClasses.map((slot, index) => <div className="class-row" key={`${slot.subject.id}-${index}`}><span className="class-time">{slot.start || '—'}</span><span className="class-bar" style={{ background: slot.subject.color || '#8170e8' }}/><div><strong>{slot.subject.name}</strong><span>{slot.subject.code || 'Mata pelajaran'} · {slot.room || 'Ruang kuliah'}</span></div></div>)}</div> : <EmptyState text="Belum ada jadwal hari ini. Atur jadwal dari mata pelajaranmu." actionLabel="Lihat mata pelajaran" onAction={() => onNavigate('Mata Pelajaran')}/>}</section>
+      <section className="panel"><div className="panel-heading"><div><p className="eyebrow">AKTIVITAS</p><h2>Aktivitas belajar</h2></div><TrendingUp size={19} className="subtle-icon" aria-label="Tren aktivitas"/></div>{activities.length ? <div className="activity-list">{activities.slice(0, 4).map((item, index) => <div className="activity-row activity-enter" style={{ '--item-index': index }} key={item.id}><span className="activity-mark"><Check size={14}/></span><div><strong>{item.text}</strong><span>{item.date}</span></div></div>)}</div> : <EmptyState text="Aktivitas belajar akan muncul di sini setelah kamu menambahkan tugas atau catatan."/>}</section></div>
   </>
 }
 
 function StatCard({ title, value, hint, icon, tone }) { return <article className="stat-card"><span className={`stat-icon ${tone}`}>{icon}</span><div><span className="stat-title">{title}</span><strong className="stat-value">{value}</strong><span className="stat-hint">{hint}</span></div></article> }
-function EmptyState({ text }) { return <div className="empty-state"><span>✦</span><p>{text}</p></div> }
+function CountUp({ value, active }) {
+  const [displayValue, setDisplayValue] = useState(0)
+  useEffect(() => {
+    if (!active || value === 0) return undefined
+    let frame
+    const start = performance.now()
+    const tick = (now) => {
+      const percent = Math.min((now - start) / 650, 1)
+      setDisplayValue(Math.round(value * percent))
+      if (percent < 1) frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [active, value])
+  return active ? displayValue : value
+}
+function EmptyState({ text, actionLabel, onAction }) { return <div className="empty-state"><span className="empty-mark"><Sparkles size={18}/></span><p>{text}</p>{onAction && <button className="text-button empty-action" onClick={onAction}>{actionLabel}<ChevronRight size={15}/></button>}</div> }
 function TaskRow({ task, onToggle }) {
   const late = task.deadline && task.deadline < today()
   const soon = task.deadline && !late && (new Date(task.deadline) - new Date(today())) / 86400000 < 3
@@ -194,8 +233,8 @@ function ProgressPage({ tasks, subjects, sessions, activities }) {
 }
 
 function SettingsPage({ settings, setSettings, onReset }) {
-  const defaults = { name: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 }
-  return <><div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / PREFERENSI</p><h1>Pengaturan</h1><p className="muted">Sesuaikan ruang belajar agar terasa milikmu.</p></div></div><div className="settings-layout"><section className="panel settings-panel"><h2>Profil pengguna</h2><label className="field-label">Nama pengguna<input className="form-control" value={settings.name} placeholder="Masukkan namamu" onChange={(event) => setSettings({ ...settings, name: event.target.value })}/></label><h2>Tampilan</h2><label className="field-label">Tema<select className="form-control" value={settings.theme} onChange={(event) => setSettings({ ...settings, theme: event.target.value })}><option value="light">Terang</option><option value="dark">Gelap</option></select></label><h2>Timer fokus</h2><div className="settings-duration"><label className="field-label">Fokus (menit)<input className="form-control" type="number" min="1" max="90" value={settings.focusMinutes} onChange={(event) => setSettings({ ...settings, focusMinutes: Math.max(1, Number(event.target.value)) })}/></label><label className="field-label">Istirahat pendek<input className="form-control" type="number" min="1" max="30" value={settings.shortBreak} onChange={(event) => setSettings({ ...settings, shortBreak: Math.max(1, Number(event.target.value)) })}/></label><label className="field-label">Istirahat panjang<input className="form-control" type="number" min="1" max="60" value={settings.longBreak} onChange={(event) => setSettings({ ...settings, longBreak: Math.max(1, Number(event.target.value)) })}/></label></div><h2>Data aplikasi</h2><p className="muted">Seluruh data disimpan di browser ini menggunakan LocalStorage.</p><div className="settings-buttons"><button className="secondary-button" onClick={() => setSettings(defaults)}>Kembalikan pengaturan default</button><button className="danger-button" onClick={onReset}><Trash2 size={17}/>Hapus semua data</button></div></section><aside className="panel settings-tip"><span className="focus-side-icon"><Sparkles size={20}/></span><h2>Data tetap milikmu</h2><p>Pengaturan dan catatan tersimpan di browser yang sedang kamu gunakan. Menghapus data tidak dapat dibatalkan.</p></aside></div></>
+  const defaults = { name: '', theme: 'system', focusMinutes: 25, shortBreak: 5, longBreak: 15 }
+  return <><div className="welcome-row"><div><p className="eyebrow">STUDYFLOW / PREFERENSI</p><h1>Pengaturan</h1><p className="muted">Sesuaikan ruang belajar agar terasa milikmu.</p></div></div><div className="settings-layout"><section className="panel settings-panel"><h2>Profil pengguna</h2><label className="field-label">Nama pengguna<input className="form-control" value={settings.name} placeholder="Masukkan namamu" onChange={(event) => setSettings({ ...settings, name: event.target.value })}/></label><h2>Tampilan</h2><label className="field-label">Tema<select className="form-control" value={settings.theme} onChange={(event) => setSettings({ ...settings, theme: event.target.value })}><option value="light">Terang</option><option value="dark">Gelap</option><option value="system">Sistem</option></select></label><h2>Timer fokus</h2><div className="settings-duration"><label className="field-label">Fokus (menit)<input className="form-control" type="number" min="1" max="90" value={settings.focusMinutes} onChange={(event) => setSettings({ ...settings, focusMinutes: Math.max(1, Number(event.target.value)) })}/></label><label className="field-label">Istirahat pendek<input className="form-control" type="number" min="1" max="30" value={settings.shortBreak} onChange={(event) => setSettings({ ...settings, shortBreak: Math.max(1, Number(event.target.value)) })}/></label><label className="field-label">Istirahat panjang<input className="form-control" type="number" min="1" max="60" value={settings.longBreak} onChange={(event) => setSettings({ ...settings, longBreak: Math.max(1, Number(event.target.value)) })}/></label></div><h2>Data aplikasi</h2><p className="muted">Seluruh data disimpan di browser ini menggunakan LocalStorage.</p><div className="settings-buttons"><button className="secondary-button" onClick={() => setSettings(defaults)}>Kembalikan pengaturan default</button><button className="danger-button" onClick={onReset}><Trash2 size={17}/>Hapus semua data</button></div></section><aside className="panel settings-tip"><span className="focus-side-icon"><Sparkles size={20}/></span><h2>Data tetap milikmu</h2><p>Pengaturan dan catatan tersimpan di browser yang sedang kamu gunakan. Menghapus data tidak dapat dibatalkan.</p></aside></div></>
 }
 
 function ItemModal({ modal, subjects, onClose, onSave }) {
