@@ -31,6 +31,11 @@
 .studyflow-confirm-dialog > p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.65; }
 .studyflow-confirm-phrase { display: grid; gap: 8px; margin-top: 17px; color: var(--text-muted); font-size: 12px; }
 .studyflow-confirm-phrase strong { color: var(--text); font-weight: 700; }
+.studyflow-confirm-phrase-instruction { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.studyflow-copy-phrase { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 30px; padding: 0 9px; color: var(--primary-strong); background: var(--accent-soft); border: 1px solid var(--border); border-radius: 9px; font: inherit; font-size: 11px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: background-color .18s ease, border-color .18s ease, transform .12s ease; }
+.studyflow-copy-phrase:hover { background: var(--soft); border-color: var(--primary); }
+.studyflow-copy-phrase:active { transform: scale(.96); }
+.studyflow-copy-phrase:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .studyflow-confirm-phrase input { width: 100%; min-height: 42px; padding: 0 12px; color: var(--text); background: var(--background); border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 13px; letter-spacing: .03em; outline: none; transition: border-color .18s ease, box-shadow .18s ease; }
 .studyflow-confirm-phrase input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent); }
 .studyflow-confirm-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 24px; }
@@ -47,6 +52,7 @@
 @media (max-width: 600px) {
   .studyflow-toast { top: 80px; right: 12px; left: 12px; width: auto; }
   .studyflow-confirm-dialog { padding: 21px; }
+  .studyflow-confirm-phrase-instruction { align-items: flex-start; flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) {
   .studyflow-confirm-overlay, .studyflow-confirm-dialog { animation: none; }

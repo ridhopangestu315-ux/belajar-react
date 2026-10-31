@@ -358,7 +358,7 @@ function Aplikasi() {
     {modal && <FormulirData modal={modal} daftarMataPelajaran={daftarMataPelajaran} tampilkanNotifikasi={tampilkanNotifikasi} onClose={() => setModal(null)} onSave={simpanData}/>}
     {modalProfilTerbuka && <ModalFotoProfil name={pengaturan.name} photo={pengaturan.profilePhoto || ''} onClose={() => aturModalProfil(false)} onSave={(profilePhoto) => { aturPengaturan((value) => ({ ...value, profilePhoto })); aturModalProfil(false); tampilkanNotifikasi(profilePhoto ? 'Foto profil berhasil diperbarui.' : 'Foto profil dihapus.') }}/>} 
     <NavigasiMobile halamanAktif={halamanAktif} onNavigate={aturHalamanAktif}/>
-    <PusatPemberitahuan notifikasi={notifikasi} konfirmasi={konfirmasi} tutupNotifikasi={tutupNotifikasi} selesaikanKonfirmasi={selesaikanKonfirmasi}/>
+    <PusatPemberitahuan notifikasi={notifikasi} konfirmasi={konfirmasi} tutupNotifikasi={tutupNotifikasi} tampilkanNotifikasi={tampilkanNotifikasi} selesaikanKonfirmasi={selesaikanKonfirmasi}/>
   </div>
 }
 
