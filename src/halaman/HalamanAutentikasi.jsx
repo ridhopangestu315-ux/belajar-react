@@ -4,7 +4,7 @@ import InputPassword from '../komponen/InputPassword.jsx'
 
 const logoStudyFlow = `${import.meta.env.BASE_URL}assets/logo-studyflow.png`
 
-export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikasi }) {
+export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikasi, csrfToken }) {
   const [mode, aturMode] = useState('login')
   const [nama, aturNama] = useState('')
   const [email, aturEmail] = useState('')
@@ -19,13 +19,13 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
       const respons = await fetch(`/api/auth/${sedangDaftar ? 'register' : 'login'}.php`, {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify({ name: nama, email, password }),
       })
       const hasil = await respons.json()
       if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Permintaan belum berhasil. Coba lagi.')
       tampilkanNotifikasi(hasil.pesan, 'success')
-      onBerhasilMasuk(hasil.user)
+      onBerhasilMasuk(hasil.user, hasil.csrfToken)
     } catch (kesalahan) {
       tampilkanNotifikasi(kesalahan instanceof TypeError
         ? 'Tidak dapat terhubung ke server. Pastikan PHP dan MySQL sedang berjalan.'

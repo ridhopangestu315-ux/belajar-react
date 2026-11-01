@@ -42,12 +42,35 @@ function pastikanMetode(string $metode): void
 /** Membaca body JSON tanpa menampilkan detail kesalahan server. */
 function bacaMasukanJson(): array
 {
+    $contentType = strtolower(trim(explode(';', (string) ($_SERVER['CONTENT_TYPE'] ?? ''))[0]));
+    if ($contentType !== 'application/json') {
+        kirimJson(['berhasil' => false, 'pesan' => 'Content-Type harus application/json.'], 415);
+        exit;
+    }
     $data = json_decode((string) file_get_contents('php://input'), true);
     if (!is_array($data)) {
         kirimJson(['berhasil' => false, 'pesan' => 'Format data permintaan tidak valid.'], 400);
         exit;
     }
     return $data;
+}
+
+/** Token CSRF disediakan oleh check-session dan dikirim melalui header khusus. */
+function tokenCsrf(): string
+{
+    if (!isset($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function pastikanCsrf(): void
+{
+    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!is_string($token) || $token === '' || !hash_equals(tokenCsrf(), $token)) {
+        kirimJson(['berhasil' => false, 'pesan' => 'Token keamanan tidak valid. Muat ulang halaman, lalu coba lagi.'], 403);
+        exit;
+    }
 }
 
 function dataPenggunaSesi(array $pengguna): array

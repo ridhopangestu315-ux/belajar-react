@@ -6,6 +6,17 @@ CREATE DATABASE IF NOT EXISTS `studyflow`
 
 USE `studyflow`;
 
+-- Pembatasan login per pasangan email dan alamat IP. Tidak menyimpan email/IP mentah.
+CREATE TABLE IF NOT EXISTS `auth_login_attempts` (
+  `bucket_hash` CHAR(64) NOT NULL,
+  `attempt_count` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `window_started_at` DATETIME NOT NULL,
+  `blocked_until` DATETIME DEFAULT NULL,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`bucket_hash`),
+  KEY `idx_auth_login_attempts_updated` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,

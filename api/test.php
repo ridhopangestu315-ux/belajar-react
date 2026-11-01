@@ -60,7 +60,7 @@ try {
     kirimJson([
         'berhasil' => false,
         'pesan' => 'Konfigurasi database lokal belum siap.',
-        'diagnosis' => $kesalahan->getMessage(),
+        'diagnosis' => 'Isi host, port, database, username, dan password MySQL pada api/config/config.local.php.',
         'php' => PHP_VERSION,
         'database' => ['status' => 'tidak terhubung', 'nama' => null],
     ], 503);
@@ -69,9 +69,7 @@ try {
     kirimJson([
         'berhasil' => false,
         'pesan' => 'PHP berjalan, tetapi terjadi kesalahan saat menguji koneksi database.',
-        'diagnosis' => $kesalahan instanceof RuntimeException
-            ? $kesalahan->getMessage()
-            : 'Periksa log error PHP di Laragon untuk detail teknis.',
+        'diagnosis' => 'Periksa api/config/config.local.php dan log error PHP Laragon untuk detail teknis.',
         'php' => PHP_VERSION,
         'database' => ['status' => 'tidak terhubung', 'nama' => null],
     ], 503);

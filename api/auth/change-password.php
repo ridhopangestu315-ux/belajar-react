@@ -3,24 +3,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/session.php';
 pastikanMetode('POST');
-$masukan = bacaMasukanJson();
-$passwordLama = (string) ($masukan['current_password'] ?? '');
-$passwordBaru = (string) ($masukan['new_password'] ?? '');
-$konfirmasi = (string) ($masukan['confirm_password'] ?? '');
-
-if ($passwordLama === '') {
-    kirimJson(['berhasil' => false, 'pesan' => 'Masukkan password lama.'], 422);
-    exit;
-}
-if (strlen($passwordBaru) < 8 || strlen($passwordBaru) > 72) {
-    kirimJson(['berhasil' => false, 'pesan' => 'Password baru harus terdiri dari 8 sampai 72 karakter.'], 422);
-    exit;
-}
-if ($passwordBaru !== $konfirmasi) {
-    kirimJson(['berhasil' => false, 'pesan' => 'Konfirmasi password baru belum sama.'], 422);
-    exit;
-}
-
 try {
     mulaiSesiAman();
     $penggunaSesi = $_SESSION['user'] ?? null;
@@ -28,6 +10,14 @@ try {
         kirimJson(['berhasil' => false, 'pesan' => 'Sesi berakhir. Silakan masuk kembali.'], 401);
         exit;
     }
+    pastikanCsrf();
+    $masukan = bacaMasukanJson();
+    $passwordLama = (string) ($masukan['current_password'] ?? '');
+    $passwordBaru = (string) ($masukan['new_password'] ?? '');
+    $konfirmasi = (string) ($masukan['confirm_password'] ?? '');
+    if ($passwordLama === '') { kirimJson(['berhasil' => false, 'pesan' => 'Masukkan password lama.'], 422); exit; }
+    if (strlen($passwordBaru) < 8 || strlen($passwordBaru) > 72) { kirimJson(['berhasil' => false, 'pesan' => 'Password baru harus terdiri dari 8 sampai 72 karakter.'], 422); exit; }
+    if ($passwordBaru !== $konfirmasi) { kirimJson(['berhasil' => false, 'pesan' => 'Konfirmasi password baru belum sama.'], 422); exit; }
 
     $pdo = buatKoneksiDatabase();
     $cari = $pdo->prepare('SELECT password_hash FROM users WHERE id = :id LIMIT 1');

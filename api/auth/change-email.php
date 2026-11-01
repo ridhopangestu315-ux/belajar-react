@@ -3,25 +3,22 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/session.php';
 pastikanMetode('POST');
-$masukan = bacaMasukanJson();
-$emailBaru = strtolower(trim((string) ($masukan['email'] ?? '')));
-$password = (string) ($masukan['password'] ?? '');
-
-if (!filter_var($emailBaru, FILTER_VALIDATE_EMAIL) || strlen($emailBaru) > 254) {
-    kirimJson(['berhasil' => false, 'pesan' => 'Masukkan alamat email baru yang valid.'], 422);
-    exit;
-}
-if ($password === '') {
-    kirimJson(['berhasil' => false, 'pesan' => 'Masukkan password untuk memverifikasi perubahan email.'], 422);
-    exit;
-}
-
 try {
     mulaiSesiAman();
     $penggunaSesi = $_SESSION['user'] ?? null;
     if (!is_array($penggunaSesi) || empty($penggunaSesi['id'])) {
         kirimJson(['berhasil' => false, 'pesan' => 'Sesi berakhir. Silakan masuk kembali.'], 401);
         exit;
+    }
+    pastikanCsrf();
+    $masukan = bacaMasukanJson();
+    $emailBaru = strtolower(trim((string) ($masukan['email'] ?? '')));
+    $password = (string) ($masukan['password'] ?? '');
+    if (!filter_var($emailBaru, FILTER_VALIDATE_EMAIL) || strlen($emailBaru) > 254) {
+        kirimJson(['berhasil' => false, 'pesan' => 'Masukkan alamat email baru yang valid.'], 422); exit;
+    }
+    if ($password === '') {
+        kirimJson(['berhasil' => false, 'pesan' => 'Masukkan password untuk memverifikasi perubahan email.'], 422); exit;
     }
 
     $pdo = buatKoneksiDatabase();

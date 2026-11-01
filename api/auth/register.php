@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/session.php';
 pastikanMetode('POST');
+mulaiSesiAman();
+pastikanCsrf();
 $masukan = bacaMasukanJson();
 $nama = trim((string) ($masukan['name'] ?? ''));
 $email = strtolower(trim((string) ($masukan['email'] ?? '')));
@@ -23,7 +25,6 @@ if (strlen($password) < 8 || strlen($password) > 72) {
 }
 
 try {
-    mulaiSesiAman();
     $pdo = buatKoneksiDatabase();
     $periksa = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
     $periksa->execute(['email' => $email]);
@@ -44,8 +45,9 @@ try {
 
     session_regenerate_id(true);
     $_SESSION['user'] = $pengguna;
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
-    kirimJson(['berhasil' => true, 'pesan' => 'Akun berhasil dibuat. Selamat belajar!', 'user' => dataPenggunaSesi($pengguna)], 201);
+    kirimJson(['berhasil' => true, 'pesan' => 'Akun berhasil dibuat. Selamat belajar!', 'user' => dataPenggunaSesi($pengguna), 'csrfToken' => tokenCsrf()], 201);
 } catch (PDOException $kesalahan) {
     error_log('StudyFlow register PDO error: ' . $kesalahan->getMessage());
     if ($kesalahan->getCode() === '23000' && (int) ($kesalahan->errorInfo[1] ?? 0) === 1062) {

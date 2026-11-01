@@ -108,7 +108,7 @@ function siapkanPenyimpananPengguna(penggunaId) {
   } catch { /* Aplikasi tetap dapat berjalan jika penyimpanan browser tidak tersedia. */ }
 }
 
-function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
+function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange, csrfToken }) {
   const [halamanAktif, aturHalamanAktif] = useState('Dashboard')
   const [apakahBilahSampingTerbuka, aturBilahSamping] = useState(false)
   const [apakahBilahSampingTerlipat, aturBilahSampingTerlipat] = useState(false)
@@ -150,7 +150,7 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
     const respons = await fetch(`/api/auth/${endpoint}.php`, {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       body: JSON.stringify(data),
     })
     const hasil = await respons.json()
@@ -365,6 +365,7 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
 function Aplikasi() {
   const [statusAutentikasi, aturStatusAutentikasi] = useState('memuat')
   const [sessionUser, aturSessionUser] = useState(null)
+  const [csrfToken, aturCsrfToken] = useState('')
   const [pesanNotifikasi, aturPesanNotifikasi] = useState(null)
 
   const tampilkanNotifikasiAutentikasi = useCallback((pesan, jenis = 'success') => {
@@ -378,6 +379,7 @@ function Aplikasi() {
         const hasil = await respons.json()
         if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Status sesi belum dapat diperiksa.')
         if (masihAktif) {
+          aturCsrfToken(hasil.csrfToken || '')
           if (hasil.authenticated && hasil.user?.id) {
             siapkanPenyimpananPengguna(hasil.user.id)
             aturSessionUser(hasil.user)
@@ -401,11 +403,12 @@ function Aplikasi() {
       const respons = await fetch('/api/auth/logout.php', {
         method: 'POST',
         credentials: 'same-origin',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       })
       const hasil = await respons.json()
       if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Belum berhasil keluar.')
       aturSessionUser(null)
+      aturCsrfToken('')
       aturStatusAutentikasi('keluar')
       tampilkanNotifikasiAutentikasi(hasil.pesan, 'success')
     } catch (kesalahan) {
@@ -415,8 +418,8 @@ function Aplikasi() {
 
   return <>
     {statusAutentikasi === 'memuat' && <main className="auth-screen"><div className="auth-loading" role="status">Memeriksa sesi StudyFlow...</div></main>}
-    {statusAutentikasi === 'keluar' && <HalamanAutentikasi onBerhasilMasuk={(pengguna) => { siapkanPenyimpananPengguna(pengguna.id); aturSessionUser(pengguna); aturStatusAutentikasi('masuk') }} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi}/>}
-    {statusAutentikasi === 'masuk' && sessionUser && <AplikasiTerlindungi sessionUser={sessionUser} onSessionUserChange={aturSessionUser} onLogout={keluar}/>}
+    {statusAutentikasi === 'keluar' && <HalamanAutentikasi csrfToken={csrfToken} onBerhasilMasuk={(pengguna, token) => { siapkanPenyimpananPengguna(pengguna.id); aturCsrfToken(token || ''); aturSessionUser(pengguna); aturStatusAutentikasi('masuk') }} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi}/>}
+    {statusAutentikasi === 'masuk' && sessionUser && <AplikasiTerlindungi csrfToken={csrfToken} sessionUser={sessionUser} onSessionUserChange={aturSessionUser} onLogout={keluar}/>}
     <PusatPemberitahuan notifikasi={pesanNotifikasi} konfirmasi={null} tutupNotifikasi={() => aturPesanNotifikasi(null)} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi} selesaikanKonfirmasi={() => {}}/>
   </>
 }

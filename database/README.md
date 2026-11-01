@@ -28,3 +28,17 @@ Buat database lewat panel InfinityFree. Jika nama database yang diberikan hostin
 Durasi Focus Mode disimpan dalam detik supaya data timer yang digunakan aplikasi tetap presisi. `jadwal.tanggal` dipakai untuk kegiatan pada tanggal tertentu, sedangkan `jadwal.hari` mendukung jadwal mingguan.
 
 Tabel `password_resets` menyiapkan struktur untuk OTP/reset. Endpoint pemulihan password dan pengiriman email belum tersedia. Lihat [AUDIT.md](AUDIT.md) untuk status integrasi tiap fitur.
+
+## Backup dan pemulihan
+
+Sebelum perubahan skema atau pemindahan hosting, buat ekspor penuh database dari phpMyAdmin (**Export → Quick → SQL**) atau gunakan `mysqldump`. Jalankan perintah dari terminal Laragon; masukkan password ketika diminta, jangan menuliskannya pada command line:
+
+```powershell
+mysqldump --host=127.0.0.1 --port=3306 --user=studyflow_user --password --single-transaction --routines --triggers studyflow > studyflow-backup.sql
+```
+
+Sesuaikan username dan port dengan konfigurasi setempat. Simpan file backup di lokasi privat di luar folder web proyek, batasi aksesnya, dan jangan commit/unggah ke GitHub. Backup berisi data pribadi; opsi `--password` tanpa nilai meminta password interaktif dan tidak menyertakannya dalam file.
+
+Untuk pemulihan, buat database tujuan kosong/terpisah lewat phpMyAdmin atau panel hosting, lalu pilih **Import** dan unggah file SQL. Untuk memeriksa backup, pulihkan dulu ke database uji terpisah dan cocokkan jumlah tabel/baris sebelum pemulihan produksi. Jangan mengimpor ke database berisi data tanpa meninjau SQL karena `INSERT`/DDL dapat menggandakan atau mengubah isi. Simpan salinan backup asli dan jangan menjalankan reset database otomatis.
+
+Skema keamanan menambahkan tabel `auth_login_attempts` (hash email+IP, tanpa email/IP mentah). `database/studyflow.sql` memakai `CREATE TABLE IF NOT EXISTS`; mengimpor ulang bagian ini aman dan tidak menghapus tabel akun atau data pengguna.
