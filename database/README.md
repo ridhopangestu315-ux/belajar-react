@@ -7,8 +7,8 @@ Skema kanonis ada di `database/studyflow.sql`. File ini membuat database `studyf
 1. Buka Laragon dan jalankan MySQL.
 2. Buka phpMyAdmin, pilih tab **Import**, lalu pilih `database/studyflow.sql` dari proyek ini.
 3. Jalankan impor. SQL membuat database `studyflow`, memilihnya, lalu membuat tabel dan relasi.
-4. Salin `api/config/config.example.php` menjadi `api/config/config.local.php`. Atur `host`, `database`, `username`, dan `password` menurut MySQL lokal. Jangan commit atau unggah `config.local.php`.
-5. Buka `/api/test.php` pada virtual host proyek. JSON dengan `berhasil: true` memastikan koneksi PDO dapat mengakses database.
+4. Salin `api/config/config.example.php` menjadi `api/config/config.local.php`. Atur `host`, `port`, `database`, `username`, dan `password` menurut MySQL lokal. Jangan commit atau unggah `config.local.php`.
+5. Buka `http://localhost/belajar-react/api/test.php`. JSON dengan `berhasil: true` memastikan koneksi PDO dapat mengakses database.
 
 Jika database lama sudah berisi tabel `users` dari skema sebelumnya, impor `database/studyflow.sql` yang sama. Script melengkapi kolom profil yang belum ada dan membuat tabel yang belum ada tanpa menghapus akun. Impor satu file ini saja.
 

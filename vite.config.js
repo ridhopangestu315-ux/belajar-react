@@ -6,12 +6,13 @@ export default defineConfig({
   // GitHub Pages memakai subpath repository; hosting InfinityFree memakai root domain.
   base: process.env.GITHUB_ACTIONS ? '/belajar-react/' : '/',
   plugins: [react()],
-  // Saat development, teruskan /api ke virtual host PHP Laragon pada domain yang sama.
+  // Saat development, teruskan /api/... ke folder proyek pada Apache Laragon.
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_API_PROXY_TARGET || 'http://belajar-react.test',
-        changeOrigin: false,
+        target: 'http://localhost',
+        changeOrigin: true,
+        rewrite: (path) => `/belajar-react${path}`,
       },
     },
   },

@@ -5,13 +5,15 @@ Dokumen ini menjelaskan cara menjalankan API PHP dan MySQL secara lokal dengan L
 ## Persiapan Laragon
 
 1. Jalankan Laragon, lalu mulai Apache dan MySQL.
-2. Buka phpMyAdmin dari menu Laragon dan buat database bernama `studyflow` dengan collation `utf8mb4_unicode_ci`.
-3. Salin `api/config/config.example.php` menjadi `api/config/config.local.php`. Isi host, nama database, username, dan password sesuai konfigurasi MySQL lokal. File lokal ini dikecualikan dari Git.
+2. Siapkan database melalui phpMyAdmin; skema SQL akan membuat database `studyflow` saat diimpor.
+3. Salin `api/config/config.example.php` menjadi `api/config/config.local.php`. Isi host, port, nama database, username, dan password sesuai konfigurasi MySQL lokal. Password contoh adalah placeholder, bukan password default. File lokal ini dikecualikan dari Git.
 4. Di phpMyAdmin, buka tab **Import**, lalu jalankan `database/studyflow.sql` untuk membuat database dan seluruh tabel.
 5. Pastikan ekstensi PDO MySQL aktif di PHP Laragon.
-6. Buka `http://belajar-react.test/api/test.php`. Respons JSON dengan `berhasil: true` menandakan PHP serta koneksi database berfungsi.
+6. Buka `http://localhost/belajar-react/api/test.php`. Respons JSON dengan `berhasil: true` menandakan PHP serta koneksi database berfungsi.
 
-Jika virtual host otomatis Laragon belum tersedia, buka proyek melalui `http://localhost/belajar-react/api/test.php` dan atur `VITE_API_PROXY_TARGET` ke `http://localhost/belajar-react` saat menjalankan Vite.
+## Jalankan React dan PHP bersamaan
+
+Biarkan Apache Laragon menyajikan folder proyek di `http://localhost/belajar-react/`, lalu jalankan `npm run dev` dari root proyek. Buka `http://localhost:5173`; proxy Vite meneruskan `/api/...` ke `http://localhost/belajar-react/api/...`.
 
 ## Pemanggilan dari React
 
@@ -22,7 +24,7 @@ const respons = await fetch('/api/test.php', { method: 'GET' })
 const hasil = await respons.json()
 ```
 
-Vite meneruskan `/api` ke `http://belajar-react.test` selama development. Jika alamat Laragon berbeda, atur `VITE_API_PROXY_TARGET` ke origin Laragon (tanpa akhiran `/api`). Pada hosting, unggah isi build React ke root web dan folder `api/` ke `/api/` pada hostname yang sama; path relatif akan memanggil API pada domain itu.
+Vite meneruskan `/api` ke Apache Laragon selama development. Pada hosting, unggah isi build React ke root web dan folder `api/` ke `/api/` pada hostname yang sama; path relatif tetap memanggil API pada domain itu.
 
 ## Keamanan konfigurasi
 
@@ -32,4 +34,4 @@ Vite meneruskan `/api` ke `http://belajar-react.test` selama development. Jika a
 - API autentikasi menggunakan `GET` untuk pemeriksaan sesi dan `POST` untuk registrasi, login, serta logout. Jangan mengandalkan `PUT`, `PATCH`, atau `DELETE` di hosting ini.
 - Session memakai cookie `HttpOnly` dan `SameSite=Lax`; atribut `Secure` aktif saat request berjalan melalui HTTPS.
 - Registrasi menyimpan hash dari `password_hash()`; password teks biasa tidak disimpan.
-- Untuk menguji, buka aplikasi di `http://belajar-react.test`, daftarkan akun milik sendiri, keluar, lalu masuk kembali. Tidak ada akun contoh yang dibuat otomatis.
+- Untuk menguji, buka aplikasi di `http://localhost:5173`, daftarkan akun milik sendiri, keluar, lalu masuk kembali. Tidak ada akun contoh yang dibuat otomatis.
