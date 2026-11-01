@@ -1,20 +1,24 @@
 # Database StudyFlow
 
-Skema kanonis ada di `database/studyflow.sql`. File ini membuat database `studyflow` dan sepuluh tabel kosong; tidak ada akun, mata pelajaran, tugas, jadwal, catatan, atau data contoh.
+File skema tidak berisi data contoh. Pilih file sesuai lingkungan: `database/studyflow_local.sql` untuk membuat/memilih database Laragon, atau `database/studyflow_infinityfree.sql` setelah database hosting dipilih di phpMyAdmin. `database/studyflow.sql` adalah salinan skema portable tanpa `CREATE DATABASE` dan `USE`.
 
 ## Impor melalui Laragon dan phpMyAdmin
 
 1. Buka Laragon dan jalankan MySQL.
-2. Buka phpMyAdmin, pilih tab **Import**, lalu pilih `database/studyflow.sql` dari proyek ini.
-3. Jalankan impor. SQL membuat database `studyflow`, memilihnya, lalu membuat tabel dan relasi.
-4. Salin `api/config/config.example.php` menjadi `api/config/config.local.php`. Atur `host`, `port`, `database`, `username`, dan `password` menurut MySQL lokal. Jangan commit atau unggah `config.local.php`.
-5. Buka `http://localhost/belajar-react/api/test.php`. JSON dengan `berhasil: true` memastikan koneksi PDO dapat mengakses database.
+2. Pilih salah satu cara impor:
+   - **Otomatis:** di phpMyAdmin buka tab **Import** dan pilih `database/studyflow_local.sql`. Akun MySQL Laragon harus memiliki izin membuat database.
+   - **Pilih database manual:** buat database bernama `studyflow` dengan charset `utf8mb4` di phpMyAdmin, pilih database itu dari panel kiri, lalu impor `database/studyflow.sql` atau `database/studyflow_infinityfree.sql`.
+3. Salin `api/config/config.example.php` menjadi `api/config/config.local.php`. Atur `host`, `port`, `database`, `username`, dan `password` sesuai MySQL lokal. Jangan commit atau unggah `config.local.php`.
+4. Buka `http://localhost/belajar-react/api/test.php`. JSON dengan `berhasil: true` memastikan koneksi PDO dapat mengakses database.
 
-Jika database lama sudah berisi tabel `users` dari skema sebelumnya, impor `database/studyflow.sql` yang sama. Script melengkapi kolom profil yang belum ada dan membuat tabel yang belum ada tanpa menghapus akun. Impor satu file ini saja.
+Jika database lama sudah berisi tabel `users`, pilih database tersebut dahulu dan impor satu file portable (`studyflow.sql` atau `studyflow_infinityfree.sql`). Script membuat tabel yang belum ada dan melengkapi kolom profil lama tanpa perintah DROP atau penghapusan akun. Jangan mengimpor kedua file portable sekaligus karena isinya sama.
 
 ## Hosting InfinityFree
 
-Buat database lewat panel InfinityFree. Jika nama database yang diberikan hosting memakai prefix, sesuaikan baris `USE studyflow` di salinan SQL sebelum mengimpor, dan hapus perintah `CREATE DATABASE` bila panel tidak memberi izin membuat database lewat SQL. Isi kredensial hosting hanya pada konfigurasi PHP server; jangan masukkan ke React atau repository.
+1. Buat database lewat **Control Panel InfinityFree** dan catat nama lengkap yang diberikan hosting (dapat memiliki prefix).
+2. Buka phpMyAdmin dari panel hosting, pilih database yang baru dibuat di panel kiri, lalu tab **Import**.
+3. Pilih `database/studyflow_infinityfree.sql` dan jalankan impor. File ini tidak mengandung `CREATE DATABASE` atau `USE`, sehingga tidak mengasumsikan nama database dan tidak memerlukan izin membuat database.
+4. Isi nama database serta kredensial yang diberikan hosting hanya di konfigurasi PHP server. Jangan menaruh kredensial di React atau repository.
 
 ## Tabel dan relasi
 
@@ -41,4 +45,4 @@ Sesuaikan username dan port dengan konfigurasi setempat. Simpan file backup di l
 
 Untuk pemulihan, buat database tujuan kosong/terpisah lewat phpMyAdmin atau panel hosting, lalu pilih **Import** dan unggah file SQL. Untuk memeriksa backup, pulihkan dulu ke database uji terpisah dan cocokkan jumlah tabel/baris sebelum pemulihan produksi. Jangan mengimpor ke database berisi data tanpa meninjau SQL karena `INSERT`/DDL dapat menggandakan atau mengubah isi. Simpan salinan backup asli dan jangan menjalankan reset database otomatis.
 
-Skema keamanan menambahkan tabel `auth_login_attempts` (hash email+IP, tanpa email/IP mentah). `database/studyflow.sql` memakai `CREATE TABLE IF NOT EXISTS`; mengimpor ulang bagian ini aman dan tidak menghapus tabel akun atau data pengguna.
+Skema keamanan menambahkan tabel `auth_login_attempts` (hash email+IP, tanpa email/IP mentah). Ketiga file skema memakai `CREATE TABLE IF NOT EXISTS`; file portable dapat diimpor setelah memilih database secara manual dan tidak menghapus tabel akun atau data pengguna.

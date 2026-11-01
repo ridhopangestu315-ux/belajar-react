@@ -1,11 +1,5 @@
 -- Skema utama StudyFlow untuk MySQL/MariaDB (Laragon dan InfinityFree).
 -- Tidak ada INSERT: seluruh tabel mulai tanpa akun atau data contoh.
-CREATE DATABASE IF NOT EXISTS `studyflow`
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE `studyflow`;
-
 -- Pembatasan login per pasangan email dan alamat IP. Tidak menyimpan email/IP mentah.
 CREATE TABLE IF NOT EXISTS `auth_login_attempts` (
   `bucket_hash` CHAR(64) NOT NULL,
