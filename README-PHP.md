@@ -7,7 +7,7 @@ Dokumen ini menjelaskan cara menjalankan API PHP dan MySQL secara lokal dengan L
 1. Jalankan Laragon, lalu mulai Apache dan MySQL.
 2. Buka phpMyAdmin dari menu Laragon dan buat database bernama `studyflow` dengan collation `utf8mb4_unicode_ci`.
 3. Salin `api/config/config.example.php` menjadi `api/config/config.local.php`. Isi host, nama database, username, dan password sesuai konfigurasi MySQL lokal. File lokal ini dikecualikan dari Git.
-4. Di phpMyAdmin, pilih database `studyflow`, buka tab **Import**, lalu jalankan file `api/database.sql` untuk membuat tabel pengguna.
+4. Di phpMyAdmin, buka tab **Import**, lalu jalankan `database/studyflow.sql` untuk membuat database dan seluruh tabel.
 5. Pastikan ekstensi PDO MySQL aktif di PHP Laragon.
 6. Buka `http://belajar-react.test/api/test.php`. Respons JSON dengan `berhasil: true` menandakan PHP serta koneksi database berfungsi.
 

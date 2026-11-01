@@ -33,9 +33,14 @@ try {
     }
 
     $hashPassword = password_hash($password, PASSWORD_DEFAULT);
+    $pdo->beginTransaction();
     $simpan = $pdo->prepare('INSERT INTO users (name, email, password_hash) VALUES (:name, :email, :password_hash)');
     $simpan->execute(['name' => $nama, 'email' => $email, 'password_hash' => $hashPassword]);
     $pengguna = ['id' => (int) $pdo->lastInsertId(), 'name' => $nama, 'email' => $email];
+
+    $simpanPengaturan = $pdo->prepare('INSERT INTO pengaturan_pengguna (pengguna_id) VALUES (:pengguna_id)');
+    $simpanPengaturan->execute(['pengguna_id' => $pengguna['id']]);
+    $pdo->commit();
 
     session_regenerate_id(true);
     $_SESSION['user'] = $pengguna;
