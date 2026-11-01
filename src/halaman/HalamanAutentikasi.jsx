@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, BookOpen, LoaderCircle } from 'lucide-react'
+import { ArrowRight, BookOpen, Eye, EyeOff, LoaderCircle, LockKeyhole } from 'lucide-react'
 
 const logoStudyFlow = `${import.meta.env.BASE_URL}assets/logo-studyflow.png`
 
@@ -8,6 +8,7 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
   const [nama, aturNama] = useState('')
   const [email, aturEmail] = useState('')
   const [password, aturPassword] = useState('')
+  const [passwordTerlihat, aturPasswordTerlihat] = useState(false)
   const [sedangMengirim, aturSedangMengirim] = useState(false)
   const sedangDaftar = mode === 'register'
 
@@ -40,7 +41,7 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
   }
 
   return <main className="auth-screen">
-    <section className="auth-card" aria-labelledby="judul-autentikasi">
+    <section className={`auth-card ${sedangDaftar ? 'auth-card-register' : 'auth-card-login'}`} aria-labelledby="judul-autentikasi">
       <div className="auth-brand"><span className="auth-logo"><img src={logoStudyFlow} alt=""/></span><span>StudyFlow</span></div>
       <div className="auth-intro-icon"><BookOpen size={22}/></div>
       <p className="auth-eyebrow">RUANG BELAJAR PRIBADIMU</p>
@@ -56,14 +57,19 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
           <span>Email</span>
           <input type="email" name="email" value={email} onChange={(event) => aturEmail(event.target.value)} autoComplete="email" maxLength={254} required placeholder="nama@email.com" />
         </label>
-        <label className="auth-field">
+        <label className={`auth-field ${!sedangDaftar ? 'auth-login-password' : ''}`}>
           <span>Password</span>
-          <input type="password" name="password" value={password} onChange={(event) => aturPassword(event.target.value)} autoComplete={sedangDaftar ? 'new-password' : 'current-password'} minLength={sedangDaftar ? 8 : undefined} maxLength={72} required placeholder={sedangDaftar ? 'Minimal 8 karakter' : 'Masukkan password'} />
+          <span className="auth-password-control">
+            <input type={!sedangDaftar && passwordTerlihat ? 'text' : 'password'} name="password" value={password} onChange={(event) => aturPassword(event.target.value)} autoComplete={sedangDaftar ? 'new-password' : 'current-password'} minLength={sedangDaftar ? 8 : undefined} maxLength={72} required placeholder={sedangDaftar ? 'Minimal 8 karakter' : 'Masukkan password'} />
+            {!sedangDaftar && <button className="auth-password-toggle" type="button" aria-label={passwordTerlihat ? 'Sembunyikan password' : 'Tampilkan password'} aria-pressed={passwordTerlihat} onClick={() => aturPasswordTerlihat((terlihat) => !terlihat)}>{passwordTerlihat ? <EyeOff size={19}/> : <Eye size={19}/>}</button>}
+          </span>
         </label>
         <button className="auth-submit" type="submit" disabled={sedangMengirim}>
           {sedangMengirim ? <><LoaderCircle className="auth-spinner" size={18}/> Memproses...</> : <>{sedangDaftar ? 'Buat akun' : 'Masuk'} <ArrowRight size={18}/></>}
         </button>
       </form>
+
+      {!sedangDaftar && <button className="auth-forgot" type="button" onClick={() => tampilkanNotifikasi('Pemulihan kata sandi belum tersedia. Silakan hubungi pengelola StudyFlow.', 'information')}><LockKeyhole size={14}/> Lupa kata sandi? <span aria-hidden="true">›</span></button>}
 
       <p className="auth-switch">{sedangDaftar ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
         <button type="button" onClick={ubahMode} disabled={sedangMengirim}>{sedangDaftar ? 'Masuk' : 'Daftar sekarang'}</button>

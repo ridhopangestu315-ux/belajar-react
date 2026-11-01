@@ -15,6 +15,13 @@
     box-shadow: 0 24px 70px rgba(68, 43, 29, .1);
 }
 
+/* Tata letak ini hanya berlaku untuk Login; Register tetap memakai tampilan dasar. */
+.auth-card-login {
+    width: min(100%, 520px);
+    padding: clamp(32px, 7vw, 54px);
+    border-radius: 28px;
+}
+
 .auth-brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 19px; font-weight: 800; letter-spacing: -.5px; }
 .auth-logo { display: grid; width: 38px; height: 38px; place-items: center; overflow: hidden; border-radius: 12px; background: #f3d8cb; }
 .auth-logo img { width: 100%; height: 100%; object-fit: contain; }
@@ -36,9 +43,35 @@
 .auth-switch button:disabled { opacity: .6; cursor: wait; }
 .auth-footnote { margin: 29px 0 0; padding-top: 18px; border-top: 1px solid var(--border); color: var(--text-faint); text-align: center; font-size: 11px; }
 
+.auth-card-login .auth-brand { gap: 11px; font-size: 20px; }
+.auth-card-login .auth-logo { width: 42px; height: 42px; border-radius: 13px; }
+.auth-card-login .auth-intro-icon { width: 53px; height: 53px; margin-top: 43px; border-radius: 17px; background: #fbe4db; color: #8b1e0f; }
+.auth-card-login .auth-eyebrow { margin-top: 25px; color: #9b2517; font-size: 11px; letter-spacing: 1.35px; }
+.auth-card-login h1 { max-width: 390px; font-size: clamp(29px, 5.4vw, 36px); letter-spacing: -1.35px; }
+.auth-card-login .auth-description { margin: 14px 0 27px; font-size: 15px; }
+.auth-card-login .auth-form { gap: 18px; }
+.auth-card-login .auth-field { gap: 8px; font-size: 13px; }
+.auth-card-login .auth-field input { min-height: 54px; padding-inline: 16px; border-color: #eaded6; border-radius: 14px; background: #faf6f2; font-size: 15px; }
+.auth-card-login .auth-field input:focus { border-color: #ed9a7c; box-shadow: 0 0 0 2px rgba(237, 154, 124, .18); }
+.auth-password-control { position: relative; display: block; }
+.auth-card-login .auth-password-control input { padding-right: 48px; }
+.auth-password-toggle { position: absolute; top: 50%; right: 12px; display: grid; width: 32px; height: 32px; place-items: center; transform: translateY(-50%); border: 0; border-radius: 50%; background: transparent; color: #61544d; cursor: pointer; }
+.auth-password-toggle:hover { background: #f2e7df; color: #8b1e0f; }
+.auth-card-login .auth-submit { min-height: 56px; margin-top: 5px; border-radius: 14px; background: #9d1e0b; box-shadow: 0 8px 18px rgba(157, 30, 11, .2); font-size: 15px; }
+.auth-card-login .auth-submit:hover:not(:disabled) { background: #851807; }
+.auth-forgot { display: flex; min-height: 34px; align-items: center; justify-content: center; gap: 6px; margin: 14px auto 0; padding: 0 14px; border: 1px solid #f4d8cc; border-radius: 999px; background: #fff0e9; color: #8b1e0f; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: background .18s, transform .18s; }
+.auth-forgot:hover { transform: translateY(-1px); background: #fbe2d7; }
+.auth-forgot span { font-size: 18px; line-height: 1; }
+.auth-card-login .auth-switch { margin-top: 13px; font-size: 13px; }
+.auth-card-login .auth-footnote { margin-top: 23px; padding-top: 18px; font-size: 12px; }
+
 @keyframes auth-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 480px) {
     .auth-screen { padding: 16px; }
     .auth-card { border-radius: 21px; }
+    .auth-card-login { padding: 29px 24px; border-radius: 23px; }
+    .auth-card-login .auth-intro-icon { margin-top: 34px; }
+    .auth-card-login h1 { font-size: clamp(27px, 8vw, 32px); }
+    .auth-card-login .auth-description { font-size: 14px; }
 }
