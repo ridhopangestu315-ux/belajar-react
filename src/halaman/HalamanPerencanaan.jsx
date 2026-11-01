@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Bell, BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Circle, ClipboardList, NotebookPen, Plus, Search, Trash2 } from 'lucide-react'
+import { Bell, BookOpen, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Circle, ClipboardList, NotebookPen, Plus, Printer, Search, Trash2 } from 'lucide-react'
 import { TampilanKosong } from '../komponen/KomponenBelajar.jsx'
 import PembacaCatatan from '../komponen/PembacaCatatan.jsx'
 import PengantarHalaman from '../komponen/PengantarHalaman.jsx'
 import { ubahKeKunciTanggalLokal as tanggalHariIni } from '../fungsi-bantuan/tanggal.js'
 
-export function HalamanData({ page, data, kataPencarian, aturKataPencarian, filter, setFilter, filterMataPelajaran, aturFilterMataPelajaran, onAdd, onEdit, onDelete, onToggle }) {
+export function HalamanData({ page, data, kataPencarian, aturKataPencarian, filter, setFilter, filterMataPelajaran, aturFilterMataPelajaran, onAdd, onEdit, onDelete, onToggle, onExportPdf }) {
   const [catatanTerbuka, aturCatatanTerbuka] = useState(null)
   const apakahMataPelajaran = page === 'Mata Pelajaran'
   const kategoriMataPelajaran = [...new Set(data.map((item) => item.category).filter(Boolean))]
@@ -18,7 +18,8 @@ export function HalamanData({ page, data, kataPencarian, aturKataPencarian, filt
   const addLabel = apakahMataPelajaran ? 'Tambah mata pelajaran' : page === 'Tugas' ? 'Tambah tugas' : page === 'Catatan' ? 'Tambah catatan' : 'Tambah pengingat'
   const ikonHalaman = apakahMataPelajaran ? BookOpen : page === 'Tugas' ? ClipboardList : page === 'Catatan' ? NotebookPen : Bell
   const aksiTambah = <button className="primary-button" onClick={onAdd}><Plus size={18}/><span>{addLabel}</span></button>
-  return <div className="non-dashboard-page"><PengantarHalaman halaman={page} judul={page} deskripsi={deskripsiHalaman[page]} Ikon={ikonHalaman} aksi={aksiTambah}/>
+  const aksiHalaman = <div className="page-intro-actions">{onExportPdf && <button className="secondary-button" type="button" onClick={onExportPdf} aria-label="Cetak laporan sebagai PDF" title="Cetak PDF"><Printer size={17}/><span>Cetak PDF</span></button>}{aksiTambah}</div>
+  return <div className="non-dashboard-page"><PengantarHalaman halaman={page} judul={page} deskripsi={deskripsiHalaman[page]} Ikon={ikonHalaman} aksi={aksiHalaman}/>
     <section className="panel data-panel"><div className="data-toolbar"><div className="search-box"><Search size={17}/><input value={kataPencarian} onChange={(event) => aturKataPencarian(event.target.value)} placeholder={`Cari ${page.toLowerCase()}...`}/></div>{page === 'Tugas' && <select className="select-control" value={filter} onChange={(event) => setFilter(event.target.value)}>{['Semua tugas', 'Belum selesai', 'Sedang dikerjakan', 'Selesai', 'Prioritas tinggi'].map((option) => <option key={option}>{option}</option>)}</select>}{apakahMataPelajaran && <select className="select-control" value={filterMataPelajaran} onChange={(event) => aturFilterMataPelajaran(event.target.value)}><option>Semua bidang</option>{kategoriMataPelajaran.map((category) => <option key={category}>{category}</option>)}</select>}</div>
       {filtered.length ? <div className={page === 'Mata Pelajaran' || page === 'Catatan' ? 'cards-grid' : 'records-list'}>{filtered.map((item) => <KartuData key={item.id} item={item} page={page} onOpen={page === 'Catatan' ? () => aturCatatanTerbuka(item) : undefined} onEdit={() => onEdit(item)} onDelete={() => onDelete(item.id)} onToggle={() => onToggle(item.id)}/>)}</div> : data.length ? <TampilanKosong text={`Tidak ada ${page.toLowerCase()} yang cocok dengan pencarianmu.`} Ikon={ikonHalaman} gayaHalaman/> : <TampilanKosong Ikon={ikonHalaman} text={`Belum ada ${page.toLowerCase()} di sini.`} subtext="Gunakan tombol tambah untuk memulai." actionLabel={addLabel} onAction={onAdd} gayaHalaman/>}</section>
     {catatanTerbuka && <PembacaCatatan catatan={catatanTerbuka} onClose={() => aturCatatanTerbuka(null)} onEdit={() => { onEdit(catatanTerbuka); aturCatatanTerbuka(null) }} onDelete={async () => { const berhasilDihapus = await onDelete(catatanTerbuka.id); if (berhasilDihapus) aturCatatanTerbuka(null) }}/>}
@@ -33,7 +34,7 @@ function KartuData({ item, page, onOpen, onEdit, onDelete, onToggle }) {
 }
 function AksiCatatan({ onEdit, onDelete }) { return <div className="record-actions"><button className="subtle-button" aria-label="Edit" onClick={onEdit}>Edit</button><button className="delete-button" aria-label="Hapus" onClick={onDelete}><Trash2 size={16}/></button></div> }
 
-export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivitas, selisihBulan, aturSelisihBulan, now, onAdd }) {
+export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivitas, selisihBulan, aturSelisihBulan, now, onAdd, onExportPdf }) {
   const [selectedDate, setSelectedDate] = useState(tanggalHariIni())
   const monthDate = new Date(now.getFullYear(), now.getMonth() + selisihBulan, 1)
   const monthTitle = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(monthDate)
@@ -54,7 +55,7 @@ export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivi
   const tanggalTerpilih = selectedDate.startsWith(`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}-`) ? Number(selectedDate.slice(-2)) : null
   const selectedEvents = tanggalTerpilih ? events(dayDate(tanggalTerpilih)) : []
   return <div className="non-dashboard-page">
-    <PengantarHalaman halaman="Kalender" judul="Kalender belajar" deskripsi="Lihat dan atur jadwal kegiatan belajarmu." Ikon={CalendarDays} aksi={<button className="primary-button" onClick={onAdd}><Plus size={18} /><span>Tambah kegiatan</span></button>}/>
+    <PengantarHalaman halaman="Kalender" judul="Kalender belajar" deskripsi="Lihat dan atur jadwal kegiatan belajarmu." Ikon={CalendarDays} aksi={<div className="page-intro-actions"><button className="secondary-button" type="button" onClick={onExportPdf} aria-label="Cetak kegiatan sebagai PDF" title="Cetak PDF"><Printer size={17}/><span>Cetak PDF</span></button><button className="primary-button" onClick={onAdd}><Plus size={18} /><span>Tambah kegiatan</span></button></div>}/>
     <section className="panel calendar-panel">
       <div className="calendar-header">
         <button className="icon-button calendar-nav" onClick={() => aturSelisihBulan((offset) => offset - 1)} aria-label="Bulan sebelumnya"><ChevronLeft size={20} /></button>

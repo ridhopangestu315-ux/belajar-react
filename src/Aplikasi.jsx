@@ -14,6 +14,7 @@ import HalamanAutentikasi from './halaman/HalamanAutentikasi.jsx'
 import { HalamanKalender, HalamanData } from './halaman/HalamanPerencanaan.jsx'
 import { usePenyimpananLokal } from './kait/usePenyimpananLokal.js'
 import { ubahKeKunciTanggalLokal } from './fungsi-bantuan/tanggal.js'
+import { eksporCatatanPdf, eksporKegiatanPdf, eksporTugasPdf } from './fungsi-bantuan/eksporStudyFlow.js'
 
 const logoStudyFlow = `${import.meta.env.BASE_URL}assets/logo-studyflow.png`
 
@@ -89,29 +90,45 @@ function migrasikanDataBelajar() {
   } catch { /* Jika penyimpanan tidak tersedia, aplikasi tetap memakai nilai di memori. */ }
 }
 
-migrasikanDataBelajar()
+const kunciPenyimpanan = (penggunaId, kunci) => `studyflow_user_${penggunaId}_${kunci.replace(/^studyflow_/, '')}`
+const kunciPenyimpananPengguna = ['studyflow_tasks', 'studyflow_subjects', 'studyflow_courses', 'studyflow_notes', 'studyflow_reminders', 'studyflow_activities', 'studyflow_settings', 'studyflow_focus_history', 'studyflow_focus_sessions', 'studyflow_timer_running', 'studyflow_timer_mode', 'studyflow_timer_seconds', 'studyflow_timer_duration_seconds']
 
-function AplikasiTerlindungi({ onLogout }) {
+function siapkanPenyimpananPengguna(penggunaId) {
+  try {
+    const pemilikLama = localStorage.getItem('studyflow_local_owner')
+    if (pemilikLama === null) {
+      migrasikanDataBelajar()
+      kunciPenyimpananPengguna.forEach((kunci) => {
+        const kunciBaru = kunciPenyimpanan(penggunaId, kunci)
+        const nilaiLama = localStorage.getItem(kunci)
+        if (nilaiLama !== null && localStorage.getItem(kunciBaru) === null) localStorage.setItem(kunciBaru, nilaiLama)
+      })
+      localStorage.setItem('studyflow_local_owner', String(penggunaId))
+    }
+  } catch { /* Aplikasi tetap dapat berjalan jika penyimpanan browser tidak tersedia. */ }
+}
+
+function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
   const [halamanAktif, aturHalamanAktif] = useState('Dashboard')
   const [apakahBilahSampingTerbuka, aturBilahSamping] = useState(false)
   const [apakahBilahSampingTerlipat, aturBilahSampingTerlipat] = useState(false)
-  const [daftarTugas, aturDaftarTugas] = usePenyimpananLokal('studyflow_tasks', [])
-  const [daftarMataPelajaran, aturDaftarMataPelajaran] = usePenyimpananLokal('studyflow_subjects', [])
-  const [daftarCatatan, aturDaftarCatatan] = usePenyimpananLokal('studyflow_notes', [])
-  const [daftarPengingat, aturDaftarPengingat] = usePenyimpananLokal('studyflow_reminders', [])
-  const [daftarAktivitas, aturDaftarAktivitas] = usePenyimpananLokal('studyflow_activities', [])
-  const [pengaturan, aturPengaturan] = usePenyimpananLokal('studyflow_settings', { name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
+  const [daftarTugas, aturDaftarTugas] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_tasks'), [])
+  const [daftarMataPelajaran, aturDaftarMataPelajaran] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_subjects'), [])
+  const [daftarCatatan, aturDaftarCatatan] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_notes'), [])
+  const [daftarPengingat, aturDaftarPengingat] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_reminders'), [])
+  const [daftarAktivitas, aturDaftarAktivitas] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_activities'), [])
+  const [pengaturan, aturPengaturan] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_settings'), { name: sessionUser.name || '', email: sessionUser.email || '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 })
   const [modal, setModal] = useState(null)
   const [kataPencarian, aturKataPencarian] = useState('')
   const [filterTugas, aturFilterTugas] = useState('Semua tugas')
   const [filterMataPelajaran, aturFilterMataPelajaran] = useState('Semua bidang')
   const [selisihBulan, aturSelisihBulan] = useState(0)
-  const [modeTimer, aturModeTimer] = usePenyimpananLokal('studyflow_timer_mode', 'Fokus')
-  const [sisaDetik, aturSisaDetik] = usePenyimpananLokal('studyflow_timer_seconds', (pengaturan.focusMinutes || 25) * 60)
-  const [durasiTimerDetik, aturDurasiTimerDetik] = usePenyimpananLokal('studyflow_timer_duration_seconds', (pengaturan.focusMinutes || 25) * 60)
-  const [timerBerjalan, aturTimerBerjalan] = usePenyimpananLokal('studyflow_timer_running', false)
-  const [jumlahSesiFokus, aturJumlahSesiFokus] = usePenyimpananLokal('studyflow_focus_sessions', 0)
-  const [riwayatFokus, aturRiwayatFokus] = usePenyimpananLokal('studyflow_focus_history', [])
+  const [modeTimer, aturModeTimer] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_mode'), 'Fokus')
+  const [sisaDetik, aturSisaDetik] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_seconds'), (pengaturan.focusMinutes || 25) * 60)
+  const [durasiTimerDetik, aturDurasiTimerDetik] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_duration_seconds'), (pengaturan.focusMinutes || 25) * 60)
+  const [timerBerjalan, aturTimerBerjalan] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_running'), false)
+  const [jumlahSesiFokus, aturJumlahSesiFokus] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_focus_sessions'), 0)
+  const [riwayatFokus, aturRiwayatFokus] = usePenyimpananLokal(kunciPenyimpanan(sessionUser.id, 'studyflow_focus_history'), [])
   const [notifikasi, aturNotifikasi] = useState(null)
   const [konfirmasi, aturKonfirmasi] = useState(null)
   const [modalProfilTerbuka, aturModalProfil] = useState(false)
@@ -122,12 +139,48 @@ function AplikasiTerlindungi({ onLogout }) {
 
   const tampilkanNotifikasi = useCallback((pesan, jenis = 'success') => {
     if (!pesan) return
+    if (pengaturan.notifications === false && jenis !== 'error') return
     aturNotifikasi((sebelumnya) => sebelumnya?.pesan === pesan && sebelumnya?.jenis === jenis
       ? sebelumnya
       : { id: Date.now(), pesan, jenis })
-  }, [])
+  }, [pengaturan.notifications])
 
   const tutupNotifikasi = useCallback(() => aturNotifikasi(null), [])
+
+  async function kirimAksiAkun(endpoint, data) {
+    const respons = await fetch(`/api/auth/${endpoint}.php`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(data),
+    })
+    const hasil = await respons.json()
+    if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Perubahan akun belum berhasil.')
+    return hasil
+  }
+
+  async function gantiEmailAkun(data) {
+    const hasil = await kirimAksiAkun('change-email', data)
+    onSessionUserChange(hasil.user)
+    aturPengaturan((current) => ({ ...current, email: hasil.user.email }))
+    tampilkanNotifikasi(hasil.pesan, 'success')
+    return hasil.user
+  }
+
+  async function gantiPasswordAkun(data) {
+    const hasil = await kirimAksiAkun('change-password', data)
+    tampilkanNotifikasi(hasil.pesan, 'success')
+  }
+
+  function cetakPdf(jenis) {
+    const namaPengguna = pengaturan.name?.trim() || sessionUser.name || 'Pengguna StudyFlow'
+    const berhasil = jenis === 'tugas'
+      ? eksporTugasPdf({ pengguna: namaPengguna, tugas: daftarTugas })
+      : jenis === 'catatan'
+        ? eksporCatatanPdf({ pengguna: namaPengguna, catatan: daftarCatatan })
+        : eksporKegiatanPdf({ pengguna: namaPengguna, kegiatan: daftarAktivitas.filter((item) => ['Kegiatan', 'Jadwal'].includes(item.type)) })
+    if (!berhasil) tampilkanNotifikasi('Jendela cetak diblokir. Izinkan pop-up untuk StudyFlow, lalu coba lagi.', 'error')
+  }
 
   const tampilkanKonfirmasi = useCallback((opsi) => new Promise((resolve) => {
     penyelesaiKonfirmasi.current?.(false)
@@ -274,12 +327,12 @@ function AplikasiTerlindungi({ onLogout }) {
     // Simpan data koleksi kosong sebelum memperbarui state agar data lama terhapus dari penyimpanan.
     const kunciKoleksiBelajar = ['studyflow_tasks', 'studyflow_subjects', 'studyflow_notes', 'studyflow_reminders', 'studyflow_activities', 'studyflow_focus_history']
     try {
-      kunciKoleksiBelajar.forEach((kunci) => localStorage.setItem(kunci, '[]'))
-      localStorage.setItem('studyflow_focus_sessions', '0')
-      localStorage.setItem('studyflow_timer_running', 'false')
-      localStorage.setItem('studyflow_timer_mode', JSON.stringify('Fokus'))
-      localStorage.setItem('studyflow_timer_seconds', JSON.stringify(25 * 60))
-      localStorage.setItem('studyflow_timer_duration_seconds', JSON.stringify(25 * 60))
+      kunciKoleksiBelajar.forEach((kunci) => localStorage.setItem(kunciPenyimpanan(sessionUser.id, kunci), '[]'))
+      localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_focus_sessions'), '0')
+      localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_running'), 'false')
+      localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_mode'), JSON.stringify('Fokus'))
+      localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_seconds'), JSON.stringify(25 * 60))
+      localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_duration_seconds'), JSON.stringify(25 * 60))
     } catch {
       tampilkanNotifikasi('Data belum dapat dihapus. Periksa ruang penyimpanan browser lalu coba lagi.', 'error')
       return
@@ -289,55 +342,17 @@ function AplikasiTerlindungi({ onLogout }) {
     tampilkanNotifikasi('Semua data StudyFlow berhasil dihapus.')
   }
 
-  async function kembalikanKeDefault() {
-    const disetujui = await tampilkanKonfirmasi({ judul: 'Kembalikan StudyFlow ke default?', pesan: 'Pengaturan dan data belajar akan dikembalikan ke kondisi awal yang kosong. Profil, preferensi tema, timer, dan perubahan data saat ini akan diatur ulang. Logo, aset aplikasi, kode, serta motivasi harian tetap aman.', jenis: 'warning', frasaKonfirmasi: 'KEMBALIKAN DEFAULT', labelKonfirmasi: 'Kembalikan ke Default' })
-    if (!disetujui) return
-
-    const pengaturanAwal = { name: '', educationLevel: '', classLevel: '', institution: '', theme: 'light', focusMinutes: 25, shortBreak: 5, longBreak: 15 }
-    const dataAwal = [
-      ['studyflow_tasks', []],
-      ['studyflow_subjects', []],
-      ['studyflow_notes', []],
-      ['studyflow_reminders', []],
-      ['studyflow_activities', []],
-      ['studyflow_settings', pengaturanAwal],
-      ['studyflow_focus_history', []],
-      ['studyflow_focus_sessions', 0],
-      ['studyflow_timer_running', false],
-      ['studyflow_timer_mode', 'Fokus'],
-      ['studyflow_timer_seconds', 25 * 60],
-      ['studyflow_timer_duration_seconds', 25 * 60],
-    ]
-    const nilaiLama = dataAwal.map(([kunci]) => [kunci, localStorage.getItem(kunci)])
-
-    try {
-      dataAwal.forEach(([kunci, nilai]) => localStorage.setItem(kunci, JSON.stringify(nilai)))
-    } catch {
-      nilaiLama.forEach(([kunci, nilai]) => {
-        try {
-          if (nilai === null) localStorage.removeItem(kunci)
-          else localStorage.setItem(kunci, nilai)
-        } catch { /* Pemulihan terbaik jika penyimpanan browser sedang bermasalah. */ }
-      })
-      tampilkanNotifikasi('Pengaturan default belum dapat diterapkan. Periksa penyimpanan browser lalu coba lagi.', 'error')
-      return
-    }
-
-    aturDaftarTugas([]); aturDaftarMataPelajaran([]); aturDaftarCatatan([]); aturDaftarPengingat([]); aturDaftarAktivitas([]); aturPengaturan(pengaturanAwal); aturJumlahSesiFokus(0); aturRiwayatFokus([]); aturTimerBerjalan(false); aturModeTimer('Fokus'); aturSisaDetik(25 * 60); aturDurasiTimerDetik(25 * 60)
-    tampilkanNotifikasi('StudyFlow berhasil dikembalikan ke kondisi awal yang kosong.')
-  }
-
   return <div className={`app-shell ${apakahBilahSampingTerlipat ? 'sidebar-collapsed' : ''}`}>
     <BilahSamping halamanAktif={halamanAktif} onNavigate={aturHalamanAktif} isOpen={apakahBilahSampingTerbuka} onClose={() => aturBilahSamping(false)} userName={pengaturan.name} userPhoto={pengaturan.profilePhoto} onProfileClick={() => aturModalProfil(true)} userSummary={[pengaturan.educationLevel, pengaturan.classLevel, pengaturan.institution].filter(Boolean).join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ') || 'Ruang belajarmu'} />
     <main className="main-area">
       <header className="topbar"><button className="icon-button mobile-menu" aria-label={apakahBilahSampingTerlipat ? 'Tampilkan menu' : 'Buka navigasi'} onClick={ubahTampilanBilahSamping}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-logo-wrap"><img className="brand-logo" src={logoStudyFlow} alt=""/></span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><button className="icon-button auth-logout" type="button" aria-label="Keluar" title="Keluar" onClick={async () => { const disetujui = await tampilkanKonfirmasi({ judul: 'Keluar dari StudyFlow?', pesan: 'Anda perlu masuk kembali untuk melanjutkan belajar.', jenis: 'warning', labelKonfirmasi: 'Keluar' }); if (disetujui) onLogout() }}><LogOut size={18}/></button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
       <section className="page-content" key={halamanAktif}>
         {halamanAktif === 'Dashboard' && <Dasbor name={pengaturan.name} daftarTugas={daftarTugasTerurut} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} jumlahTugasAktif={jumlahTugasAktif} jumlahTugasSelesai={jumlahTugasSelesai} progress={progress} riwayatFokus={riwayatFokus} now={tanggalSaatIni} onToggleTask={ubahStatusTugas} onAddTask={() => bukaFormulirTambah('Tugas')} onNavigate={aturHalamanAktif} onStartFocus={() => { aturHalamanAktif('Focus Mode'); mulaiFokusDariDasbor() }} animateStats={!statistikSudahDianimasikan.current}/>}
-        {pageToData[halamanAktif] && <HalamanData page={halamanAktif} data={({ Tugas: daftarTugasTerurut, 'Mata Pelajaran': daftarMataPelajaran, Catatan: daftarCatatan, Pengingat: [...daftarPengingat].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[halamanAktif]} kataPencarian={kataPencarian} aturKataPencarian={aturKataPencarian} filter={filterTugas} setFilter={aturFilterTugas} filterMataPelajaran={filterMataPelajaran} aturFilterMataPelajaran={aturFilterMataPelajaran} onAdd={() => bukaFormulirTambah()} onEdit={(item) => bukaFormulirTambah(halamanAktif, item)} onDelete={(id) => hapusData(halamanAktif, id)} onToggle={(id) => halamanAktif === 'Tugas' ? ubahStatusTugas(id) : aturDaftarPengingat((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
-        {halamanAktif === 'Kalender' && <HalamanKalender daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} selisihBulan={selisihBulan} aturSelisihBulan={aturSelisihBulan} now={tanggalSaatIni} onAdd={() => bukaFormulirTambah('Kalender')}/>}
+        {pageToData[halamanAktif] && <HalamanData page={halamanAktif} data={({ Tugas: daftarTugasTerurut, 'Mata Pelajaran': daftarMataPelajaran, Catatan: daftarCatatan, Pengingat: [...daftarPengingat].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[halamanAktif]} kataPencarian={kataPencarian} aturKataPencarian={aturKataPencarian} filter={filterTugas} setFilter={aturFilterTugas} filterMataPelajaran={filterMataPelajaran} aturFilterMataPelajaran={aturFilterMataPelajaran} onAdd={() => bukaFormulirTambah()} onEdit={(item) => bukaFormulirTambah(halamanAktif, item)} onDelete={(id) => hapusData(halamanAktif, id)} onToggle={(id) => halamanAktif === 'Tugas' ? ubahStatusTugas(id) : aturDaftarPengingat((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))} onExportPdf={halamanAktif === 'Tugas' ? () => cetakPdf('tugas') : halamanAktif === 'Catatan' ? () => cetakPdf('catatan') : undefined}/>}
+        {halamanAktif === 'Kalender' && <HalamanKalender daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} selisihBulan={selisihBulan} aturSelisihBulan={aturSelisihBulan} now={tanggalSaatIni} onAdd={() => bukaFormulirTambah('Kalender')} onExportPdf={() => cetakPdf('kegiatan')}/>}
         {halamanAktif === 'Focus Mode' && <HalamanFokus mode={modeTimer} seconds={sisaDetik} running={timerBerjalan} sessions={jumlahSesiFokus} history={riwayatFokus} onMode={ubahModeTimer} onRun={mulaiTimerFokus} onPause={() => aturTimerBerjalan(false)} onReset={() => { aturTimerBerjalan(false); ubahModeTimer(modeTimer) }}/ >}
         {halamanAktif === 'Progress Belajar' && <HalamanProgres daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} sessions={jumlahSesiFokus} riwayatFokus={riwayatFokus} daftarAktivitas={daftarAktivitas} now={tanggalSaatIni}/>}
-        {halamanAktif === 'Pengaturan' && <HalamanPengaturan pengaturan={pengaturan} aturPengaturan={aturPengaturan} onRestore={kembalikanKeDefault} onReset={aturUlangDataAplikasi}/>}
+        {halamanAktif === 'Pengaturan' && <HalamanPengaturan pengaturan={pengaturan} aturPengaturan={aturPengaturan} akun={sessionUser} onChangeEmail={gantiEmailAkun} onChangePassword={gantiPasswordAkun} onReset={aturUlangDataAplikasi} tampilkanNotifikasi={tampilkanNotifikasi}/>}
       </section>
     </main>
     {modal && <FormulirData modal={modal} daftarMataPelajaran={daftarMataPelajaran} tampilkanNotifikasi={tampilkanNotifikasi} onClose={() => setModal(null)} onSave={simpanData}/>}
@@ -349,6 +364,7 @@ function AplikasiTerlindungi({ onLogout }) {
 
 function Aplikasi() {
   const [statusAutentikasi, aturStatusAutentikasi] = useState('memuat')
+  const [sessionUser, aturSessionUser] = useState(null)
   const [pesanNotifikasi, aturPesanNotifikasi] = useState(null)
 
   const tampilkanNotifikasiAutentikasi = useCallback((pesan, jenis = 'success') => {
@@ -362,7 +378,14 @@ function Aplikasi() {
         const hasil = await respons.json()
         if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Status sesi belum dapat diperiksa.')
         if (masihAktif) {
-          aturStatusAutentikasi(hasil.authenticated ? 'masuk' : 'keluar')
+          if (hasil.authenticated && hasil.user?.id) {
+            siapkanPenyimpananPengguna(hasil.user.id)
+            aturSessionUser(hasil.user)
+            aturStatusAutentikasi('masuk')
+          } else {
+            aturSessionUser(null)
+            aturStatusAutentikasi('keluar')
+          }
         }
       })
       .catch(() => {
@@ -382,6 +405,7 @@ function Aplikasi() {
       })
       const hasil = await respons.json()
       if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Belum berhasil keluar.')
+      aturSessionUser(null)
       aturStatusAutentikasi('keluar')
       tampilkanNotifikasiAutentikasi(hasil.pesan, 'success')
     } catch (kesalahan) {
@@ -391,8 +415,8 @@ function Aplikasi() {
 
   return <>
     {statusAutentikasi === 'memuat' && <main className="auth-screen"><div className="auth-loading" role="status">Memeriksa sesi StudyFlow...</div></main>}
-    {statusAutentikasi === 'keluar' && <HalamanAutentikasi onBerhasilMasuk={() => aturStatusAutentikasi('masuk')} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi}/>}
-    {statusAutentikasi === 'masuk' && <AplikasiTerlindungi onLogout={keluar}/>}
+    {statusAutentikasi === 'keluar' && <HalamanAutentikasi onBerhasilMasuk={(pengguna) => { siapkanPenyimpananPengguna(pengguna.id); aturSessionUser(pengguna); aturStatusAutentikasi('masuk') }} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi}/>}
+    {statusAutentikasi === 'masuk' && sessionUser && <AplikasiTerlindungi sessionUser={sessionUser} onSessionUserChange={aturSessionUser} onLogout={keluar}/>}
     <PusatPemberitahuan notifikasi={pesanNotifikasi} konfirmasi={null} tutupNotifikasi={() => aturPesanNotifikasi(null)} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi} selesaikanKonfirmasi={() => {}}/>
   </>
 }
