@@ -6,6 +6,7 @@ pastikanMetode('POST');
 try {
     mulaiSesiAman();
 } catch (Throwable $kesalahan) {
+    error_log('StudyFlow logout error: ' . $kesalahan->getMessage());
     kirimJson(['berhasil' => false, 'pesan' => 'Sesi belum dapat dimulai. Periksa konfigurasi server.'], 503);
     exit;
 }

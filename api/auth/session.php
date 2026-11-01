@@ -23,7 +23,8 @@ function mulaiSesiAman(): void
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
-    if (!@session_start() || session_status() !== PHP_SESSION_ACTIVE) {
+    if (!session_start() || session_status() !== PHP_SESSION_ACTIVE) {
+        error_log('StudyFlow session start failed.');
         throw new RuntimeException('Sesi tidak dapat dimulai.');
     }
 }

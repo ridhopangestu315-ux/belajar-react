@@ -29,5 +29,6 @@ try {
     $_SESSION['user'] = dataPenggunaSesi($pengguna);
     kirimJson(['berhasil' => true, 'pesan' => 'Berhasil masuk. Selamat belajar!', 'user' => dataPenggunaSesi($pengguna)]);
 } catch (Throwable $kesalahan) {
+    error_log('StudyFlow login error: ' . $kesalahan->getMessage());
     kirimKesalahanServer();
 }

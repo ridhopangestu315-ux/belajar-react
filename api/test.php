@@ -29,6 +29,7 @@ try {
     ]);
 } catch (PDOException $kesalahan) {
     // Beri diagnosis yang berguna tanpa mengirim DSN, username, atau password ke browser.
+    error_log('StudyFlow api/test.php PDO error: ' . $kesalahan->getMessage());
     $kodeMySql = (int) ($kesalahan->errorInfo[1] ?? 0);
     switch ($kodeMySql) {
         case 1045:

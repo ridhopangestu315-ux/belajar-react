@@ -27,19 +27,18 @@ export function HalamanData({ page, data, kataPencarian, aturKataPencarian, filt
 }
 const deskripsiHalaman = { 'Mata Pelajaran': 'Your subjects, your schedule, your progress!', Tugas: 'Kelola tugas dan jaga deadline tetap terkendali.', Catatan: 'Jangan sampai ide bagusmu lupa dicatat!', Pengingat: 'Ingat aktivitas penting yang akan datang.' }
 function KartuData({ item, page, onOpen, onEdit, onDelete, onToggle }) {
-  if (page === 'Tugas') return <div className={`record-task ${item.done ? 'task-done' : ''}`}><button className="check-button" onClick={onToggle} aria-label="Ubah status">{item.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="record-body"><strong>{item.title}</strong><p>{item.description || 'Tidak ada deskripsi'}</p><span>{item.subject || 'Tanpa mata pelajaran'} · Deadline {item.deadline || 'belum ditentukan'}</span></div><span className={`priority priority-${(item.priority || 'sedang').toLowerCase()}`}>{item.status || (item.done ? 'Selesai' : item.priority || 'Sedang')}</span><AksiCatatan onEdit={onEdit} onDelete={onDelete}/></div>
+  if (page === 'Tugas') return <div className={`record-task ${item.done ? 'task-done' : ''}`}><button className="check-button" onClick={onToggle} aria-label={item.done ? 'Tandai belum selesai' : 'Tandai selesai'}>{item.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="record-body"><strong>{item.title}</strong><p>{item.description || 'Tidak ada deskripsi'}</p><span>{item.subject || 'Tanpa mata pelajaran'} · Deadline {item.deadline || 'belum ditentukan'}</span></div><span className={`priority priority-${(item.priority || 'sedang').toLowerCase()}`}>{item.status || (item.done ? 'Selesai' : 'Belum dikerjakan')}</span><AksiCatatan onEdit={onEdit} onDelete={onDelete}/></div>
   if (page === 'Mata Pelajaran') return <article className="subject-card" style={{ '--subject-color': item.color || '#D5735B' }}><div className="subject-card-top"><span className="subject-color-dot"/><span>{item.category || 'UMUM'}{item.level ? ` · ${item.level}` : ''}</span><AksiCatatan onEdit={onEdit} onDelete={onDelete}/></div><h3>{item.name}</h3>{item.teacher && <p>Pengajar: {item.teacher}</p>}{item.description && <p className="subject-description">{item.description}</p>}{item.code && <span className="subject-code">Kode pelajaran: {item.code}</span>}<div className="subject-schedule">{(item.schedule || []).map((slot, i) => <span key={i}>{slot.day} · {slot.start}–{slot.end}{slot.room ? ` · ${slot.room}` : ''}</span>)}{!item.schedule?.length && <span>Jadwal belajar belum ditambahkan</span>}</div></article>
   if (page === 'Catatan') return <article className="note-card note-card-clickable" tabIndex={0} aria-label={`Baca catatan: ${item.title}`} onClick={(event) => { if (!event.target.closest('button')) onOpen?.() }} onKeyDown={(event) => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onOpen?.() } }}><div className="note-card-head"><span className="note-label">{item.subject || 'CATATAN'}</span><AksiCatatan onEdit={onEdit} onDelete={onDelete}/></div><h3>{item.title}</h3><p>{item.description}</p><span className="record-date">{item.createdAt}</span></article>
   return <div className="record-task"><button className="check-button" onClick={onToggle}>{item.done ? <CheckCircle2 size={20}/> : <Circle size={20}/>}</button><div className="record-body"><strong>{item.title}</strong><p>{item.description}</p><span>{item.date} {item.time && `· ${item.time}`}</span></div><AksiCatatan onEdit={onEdit} onDelete={onDelete}/></div>
 }
 function AksiCatatan({ onEdit, onDelete }) { return <div className="record-actions"><button className="subtle-button" aria-label="Edit" onClick={onEdit}>Edit</button><button className="delete-button" aria-label="Hapus" onClick={onDelete}><Trash2 size={16}/></button></div> }
 
-export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivitas, selisihBulan, aturSelisihBulan, now, onAdd, onExportPdf }) {
+export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivitas, selisihBulan, aturSelisihBulan, now, onAdd, onExportPdf, onEditActivity, onDeleteActivity }) {
   const [selectedDate, setSelectedDate] = useState(tanggalHariIni())
   const monthDate = new Date(now.getFullYear(), now.getMonth() + selisihBulan, 1)
   const monthTitle = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(monthDate)
   const firstWeekday = monthDate.getDay()
-  const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate()
   const cells = Array.from({ length: 42 }, (_, index) => {
     const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), index - firstWeekday + 1)
     return { day: date.getDate(), date, inMonth: date.getMonth() === monthDate.getMonth() }
@@ -49,8 +48,9 @@ export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivi
   const events = (date) => {
     const dateString = typeof date === 'string' ? date : dateKey(date)
     const weekday = new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date(`${dateString}T12:00:00`))
-    const classes = daftarMataPelajaran.flatMap((subject) => (subject.schedule || []).filter((slot) => slot.day === weekday).map((slot) => ({ label: `${slot.start || ''} ${subject.name}`, type: 'event-class' })))
-    return [...daftarTugas.filter((task) => task.deadline === dateString).map((task) => ({ label: task.title, type: 'event-task' })), ...daftarAktivitas.filter((item) => item.date === dateString).map((item) => ({ label: item.title || item.text, type: 'event-activity' })), ...classes]
+    const classes = daftarMataPelajaran.flatMap((subject) => (subject.schedule || []).filter((slot) => slot.day === weekday).map((slot) => ({ label: `${slot.start || ''} ${subject.name}`, type: 'event-class', item: subject })))
+    const kegiatan = daftarAktivitas.filter((item) => item.date === dateString && ['Kegiatan', 'Jadwal'].includes(item.type)).map((item) => ({ label: item.title || item.text || 'Kegiatan', type: 'event-activity', item }))
+    return [...daftarTugas.filter((task) => task.deadline === dateString).map((task) => ({ label: task.title, type: 'event-task', item: task })), ...kegiatan, ...classes]
   }
   const tanggalTerpilih = selectedDate.startsWith(`${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}-`) ? Number(selectedDate.slice(-2)) : null
   const selectedEvents = tanggalTerpilih ? events(dayDate(tanggalTerpilih)) : []
@@ -81,7 +81,7 @@ export function HalamanKalender({ daftarTugas, daftarMataPelajaran, daftarAktivi
         <h3>{tanggalTerpilih ? new Intl.DateTimeFormat('id-ID', { weekday:'long', day:'numeric', month:'long' }).format(new Date(dayDate(tanggalTerpilih) + 'T12:00:00')) : 'Pilih tanggal untuk melihat jadwal'}</h3>
         {selectedEvents.length ? <div className="selected-event-list">{selectedEvents.map((event, index) => {
           const tone = event.type === 'event-task' ? 'purple-dot' : event.type === 'event-class' ? 'green-dot' : 'blue-dot'
-          return <div className="selected-event" key={event.label + index}><span className={'legend-dot ' + tone} /><span>{event.label}</span></div>
+          return <div className="selected-event" key={`${event.type}-${event.item?.id || event.label}-${index}`}><span className={'legend-dot ' + tone} /><span className="selected-event-label">{event.label}</span>{event.type === 'event-activity' && <span className="selected-event-actions"><button type="button" className="subtle-button" onClick={() => onEditActivity(event.item)}>Edit</button><button type="button" className="delete-button" aria-label={`Hapus kegiatan ${event.label}`} onClick={() => onDeleteActivity(event.item.id)}><Trash2 size={15}/></button></span>}</div>
         })}</div> : <p className="muted">Tidak ada kegiatan tercatat pada tanggal ini.</p>}
       </section>
     </section>

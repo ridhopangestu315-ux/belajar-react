@@ -133,7 +133,6 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
   const [konfirmasi, aturKonfirmasi] = useState(null)
   const [modalProfilTerbuka, aturModalProfil] = useState(false)
   const [tanggalSaatIni, aturTanggalSaatIni] = useState(() => new Date())
-  const statistikSudahDianimasikan = useRef(false)
   const penyelesaianTimerSudahDitangani = useRef(false)
   const penyelesaiKonfirmasi = useRef(null)
 
@@ -199,10 +198,6 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
   const jumlahTugasAktif = daftarTugas.length - jumlahTugasSelesai
   const progress = daftarTugas.length ? Math.round((jumlahTugasSelesai / daftarTugas.length) * 100) : 0
   const daftarTugasTerurut = useMemo(() => [...daftarTugas].sort((a, b) => Number(a.done) - Number(b.done) || (a.deadline || '9999').localeCompare(b.deadline || '9999')), [daftarTugas])
-
-  useEffect(() => {
-    if (halamanAktif === 'Dashboard') statistikSudahDianimasikan.current = true
-  }, [halamanAktif])
 
   useEffect(() => {
     const clockId = window.setInterval(() => aturTanggalSaatIni(new Date()), 60_000)
@@ -275,7 +270,9 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
     }
     else if (page === 'Catatan') aturDaftarCatatan((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData, updatedAt: tanggalHariIni() } : entry) : [...list, { ...formData, id, createdAt: tanggalHariIni(), updatedAt: tanggalHariIni() }])
     else if (page === 'Pengingat') aturDaftarPengingat((list) => item ? list.map((entry) => entry.id === id ? { ...entry, ...formData } : entry) : [...list, { ...formData, id, done: false }])
-    else if (page === 'Kalender') aturDaftarAktivitas((list) => [{ ...formData, id, date: formData.date || tanggalHariIni(), type: 'Kegiatan' }, ...list])
+    else if (page === 'Kalender') aturDaftarAktivitas((list) => item
+      ? list.map((entry) => entry.id === id ? { ...entry, ...formData, id, date: formData.date || tanggalHariIni(), type: 'Kegiatan' } : entry)
+      : [{ ...formData, id, date: formData.date || tanggalHariIni(), type: 'Kegiatan' }, ...list])
     setModal(null)
     tampilkanNotifikasi(`${item ? 'Perubahan' : 'Data'} berhasil disimpan.`)
   }
@@ -283,7 +280,7 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
   async function hapusData(page, id) {
     const disetujui = await tampilkanKonfirmasi({ judul: 'Hapus data ini?', pesan: 'Data terkait yang sudah tersimpan akan tetap ada.', jenis: 'warning', labelKonfirmasi: 'Ya, hapus' })
     if (!disetujui) return
-    const setter = { Tugas: aturDaftarTugas, 'Mata Pelajaran': aturDaftarMataPelajaran, Catatan: aturDaftarCatatan, Pengingat: aturDaftarPengingat }[page]
+    const setter = { Tugas: aturDaftarTugas, 'Mata Pelajaran': aturDaftarMataPelajaran, Catatan: aturDaftarCatatan, Pengingat: aturDaftarPengingat, Kalender: aturDaftarAktivitas }[page]
     if (!setter) return false
     setter((list) => list.filter((item) => item.id !== id))
     tampilkanNotifikasi('Data berhasil dihapus.')
@@ -333,6 +330,9 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
       localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_mode'), JSON.stringify('Fokus'))
       localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_seconds'), JSON.stringify(25 * 60))
       localStorage.setItem(kunciPenyimpanan(sessionUser.id, 'studyflow_timer_duration_seconds'), JSON.stringify(25 * 60))
+      if (localStorage.getItem('studyflow_local_owner') === String(sessionUser.id)) {
+        [...kunciKoleksiBelajar, 'studyflow_courses'].forEach((kunci) => localStorage.removeItem(kunci))
+      }
     } catch {
       tampilkanNotifikasi('Data belum dapat dihapus. Periksa ruang penyimpanan browser lalu coba lagi.', 'error')
       return
@@ -345,12 +345,12 @@ function AplikasiTerlindungi({ onLogout, sessionUser, onSessionUserChange }) {
   return <div className={`app-shell ${apakahBilahSampingTerlipat ? 'sidebar-collapsed' : ''}`}>
     <BilahSamping halamanAktif={halamanAktif} onNavigate={aturHalamanAktif} isOpen={apakahBilahSampingTerbuka} onClose={() => aturBilahSamping(false)} userName={pengaturan.name} userPhoto={pengaturan.profilePhoto} onProfileClick={() => aturModalProfil(true)} userSummary={[pengaturan.educationLevel, pengaturan.classLevel, pengaturan.institution].filter(Boolean).join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ') || 'Ruang belajarmu'} />
     <main className="main-area">
-      <header className="topbar"><button className="icon-button mobile-menu" aria-label={apakahBilahSampingTerlipat ? 'Tampilkan menu' : 'Buka navigasi'} onClick={ubahTampilanBilahSamping}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-logo-wrap"><img className="brand-logo" src={logoStudyFlow} alt=""/></span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><button className="icon-button auth-logout" type="button" aria-label="Keluar" title="Keluar" onClick={async () => { const disetujui = await tampilkanKonfirmasi({ judul: 'Keluar dari StudyFlow?', pesan: 'Anda perlu masuk kembali untuk melanjutkan belajar.', jenis: 'warning', labelKonfirmasi: 'Keluar' }); if (disetujui) onLogout() }}><LogOut size={18}/></button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
+      <header className="topbar"><button className="icon-button mobile-menu" aria-label={apakahBilahSampingTerlipat ? 'Tampilkan menu' : 'Buka navigasi'} onClick={ubahTampilanBilahSamping}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-logo-wrap"><img className="brand-logo" src={logoStudyFlow} alt=""/></span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(tanggalSaatIni)}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><button className="icon-button auth-logout" type="button" aria-label="Keluar" title="Keluar" onClick={async () => { const disetujui = await tampilkanKonfirmasi({ judul: 'Keluar dari StudyFlow?', pesan: 'Anda perlu masuk kembali untuk melanjutkan belajar.', jenis: 'warning', labelKonfirmasi: 'Keluar' }); if (disetujui) onLogout() }}><LogOut size={18}/></button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
       <section className="page-content" key={halamanAktif}>
-        {halamanAktif === 'Dashboard' && <Dasbor name={pengaturan.name} daftarTugas={daftarTugasTerurut} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} jumlahTugasAktif={jumlahTugasAktif} jumlahTugasSelesai={jumlahTugasSelesai} progress={progress} riwayatFokus={riwayatFokus} now={tanggalSaatIni} onToggleTask={ubahStatusTugas} onAddTask={() => bukaFormulirTambah('Tugas')} onNavigate={aturHalamanAktif} onStartFocus={() => { aturHalamanAktif('Focus Mode'); mulaiFokusDariDasbor() }} animateStats={!statistikSudahDianimasikan.current}/>}
+        {halamanAktif === 'Dashboard' && <Dasbor name={pengaturan.name} daftarTugas={daftarTugasTerurut} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} jumlahTugasAktif={jumlahTugasAktif} jumlahTugasSelesai={jumlahTugasSelesai} progress={progress} riwayatFokus={riwayatFokus} now={tanggalSaatIni} onToggleTask={ubahStatusTugas} onAddTask={() => bukaFormulirTambah('Tugas')} onNavigate={aturHalamanAktif} onStartFocus={() => { aturHalamanAktif('Focus Mode'); mulaiFokusDariDasbor() }} animateStats={halamanAktif === 'Dashboard'}/>}
         {pageToData[halamanAktif] && <HalamanData page={halamanAktif} data={({ Tugas: daftarTugasTerurut, 'Mata Pelajaran': daftarMataPelajaran, Catatan: daftarCatatan, Pengingat: [...daftarPengingat].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[halamanAktif]} kataPencarian={kataPencarian} aturKataPencarian={aturKataPencarian} filter={filterTugas} setFilter={aturFilterTugas} filterMataPelajaran={filterMataPelajaran} aturFilterMataPelajaran={aturFilterMataPelajaran} onAdd={() => bukaFormulirTambah()} onEdit={(item) => bukaFormulirTambah(halamanAktif, item)} onDelete={(id) => hapusData(halamanAktif, id)} onToggle={(id) => halamanAktif === 'Tugas' ? ubahStatusTugas(id) : aturDaftarPengingat((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))} onExportPdf={halamanAktif === 'Tugas' ? () => cetakPdf('tugas') : halamanAktif === 'Catatan' ? () => cetakPdf('catatan') : undefined}/>}
-        {halamanAktif === 'Kalender' && <HalamanKalender daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} selisihBulan={selisihBulan} aturSelisihBulan={aturSelisihBulan} now={tanggalSaatIni} onAdd={() => bukaFormulirTambah('Kalender')} onExportPdf={() => cetakPdf('kegiatan')}/>}
-        {halamanAktif === 'Focus Mode' && <HalamanFokus mode={modeTimer} seconds={sisaDetik} running={timerBerjalan} sessions={jumlahSesiFokus} history={riwayatFokus} onMode={ubahModeTimer} onRun={mulaiTimerFokus} onPause={() => aturTimerBerjalan(false)} onReset={() => { aturTimerBerjalan(false); ubahModeTimer(modeTimer) }}/ >}
+        {halamanAktif === 'Kalender' && <HalamanKalender daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} selisihBulan={selisihBulan} aturSelisihBulan={aturSelisihBulan} now={tanggalSaatIni} onAdd={() => bukaFormulirTambah('Kalender')} onEditActivity={(item) => bukaFormulirTambah('Kalender', item)} onDeleteActivity={(id) => hapusData('Kalender', id)} onExportPdf={() => cetakPdf('kegiatan')}/>}
+        {halamanAktif === 'Focus Mode' && <HalamanFokus mode={modeTimer} seconds={sisaDetik} running={timerBerjalan} sessions={jumlahSesiFokus} history={riwayatFokus} focusMinutes={pengaturan.focusMinutes || 25} shortBreak={pengaturan.shortBreak || 5} longBreak={pengaturan.longBreak || 15} onMode={ubahModeTimer} onRun={mulaiTimerFokus} onPause={() => aturTimerBerjalan(false)} onReset={() => { aturTimerBerjalan(false); ubahModeTimer(modeTimer) }}/ >}
         {halamanAktif === 'Progress Belajar' && <HalamanProgres daftarTugas={daftarTugas} daftarMataPelajaran={daftarMataPelajaran} sessions={jumlahSesiFokus} riwayatFokus={riwayatFokus} daftarAktivitas={daftarAktivitas} now={tanggalSaatIni}/>}
         {halamanAktif === 'Pengaturan' && <HalamanPengaturan pengaturan={pengaturan} aturPengaturan={aturPengaturan} akun={sessionUser} onChangeEmail={gantiEmailAkun} onChangePassword={gantiPasswordAkun} onReset={aturUlangDataAplikasi} tampilkanNotifikasi={tampilkanNotifikasi}/>}
       </section>

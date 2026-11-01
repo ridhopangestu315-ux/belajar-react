@@ -1630,6 +1630,11 @@ body {
     padding: 7px 0;
 }
 
+.selected-event-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.selected-event-label { min-width: 0; overflow-wrap: anywhere; }
+.selected-event-actions .subtle-button { min-height: 30px; padding: 4px 9px; font-size: 11px; }
+.selected-event-actions .delete-button { width: 30px; height: 30px; }
+
 .subject-description {
     margin-top: 7px !important;
     line-height: 1.55;
