@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ImagePlus, Trash2, Upload, X } from 'lucide-react'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -9,6 +9,16 @@ export default function ModalFotoProfil({ name, photo = '', onClose, onSave }) {
   const [preview, setPreview] = useState(photo)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [fotoDiperbesar, aturFotoDiperbesar] = useState(false)
+
+  useEffect(() => {
+    if (!fotoDiperbesar) return undefined
+    function tutupDenganEscape(event) {
+      if (event.key === 'Escape') aturFotoDiperbesar(false)
+    }
+    window.addEventListener('keydown', tutupDenganEscape)
+    return () => window.removeEventListener('keydown', tutupDenganEscape)
+  }, [fotoDiperbesar])
 
   function bacaFoto(file) {
     setError('')
@@ -46,7 +56,9 @@ export default function ModalFotoProfil({ name, photo = '', onClose, onSave }) {
     <section className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
       <div className="profile-modal-heading"><div><span className="eyebrow">PROFIL</span><h2 id="profile-modal-title">Foto profil</h2></div><button className="icon-button" aria-label="Tutup" onClick={onClose}><X size={18}/></button></div>
       <p className="profile-modal-help">Foto akan tampil di avatar desktop dan mobile.</p>
-      <div className="profile-preview">{preview ? <img src={preview} alt="Preview foto profil"/> : <span>{(name || 'S').trim().slice(0, 1).toUpperCase() || 'S'}</span>}</div>
+      <div className="profile-preview">{preview
+        ? <button className="profile-preview-image-button" type="button" onClick={() => aturFotoDiperbesar(true)} aria-label="Lihat foto profil ukuran penuh"><img src={preview} alt="Preview foto profil"/></button>
+        : <span>{(name || 'S').trim().slice(0, 1).toUpperCase() || 'S'}</span>}</div>
       {error && <p className="profile-error" role="alert">{error}</p>}
       <div className="profile-modal-actions">
         <button className="secondary-button" type="button" onClick={() => fileInput.current?.click()} disabled={busy}><Upload size={16}/>{preview ? 'Ganti foto' : 'Unggah foto'}</button>
@@ -56,5 +68,9 @@ export default function ModalFotoProfil({ name, photo = '', onClose, onSave }) {
       <p className="profile-file-hint"><ImagePlus size={14}/> JPG, PNG, atau WEBP · Maksimal 5 MB</p>
       <div className="profile-modal-footer"><button className="secondary-button" onClick={onClose}>Batal</button><button className="primary-button" disabled={busy} onClick={() => onSave(preview)}>{busy ? 'Memproses…' : 'Simpan foto'}</button></div>
     </section>
+    {fotoDiperbesar && preview && <div className="profile-image-lightbox" role="dialog" aria-modal="true" aria-label="Foto profil ukuran penuh" onMouseDown={(event) => { if (event.target === event.currentTarget) aturFotoDiperbesar(false) }}>
+      <button className="profile-image-lightbox-close" type="button" aria-label="Tutup foto" onClick={() => aturFotoDiperbesar(false)}><X size={22}/></button>
+      <img src={preview} alt="Foto profil ukuran penuh"/>
+    </div>}
   </div>
 }

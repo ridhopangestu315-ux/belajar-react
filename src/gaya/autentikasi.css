@@ -54,7 +54,7 @@
 .auth-card-login .auth-field input { min-height: 54px; padding-inline: 16px; border-color: #eaded6; border-radius: 14px; background: #faf6f2; font-size: 15px; }
 .auth-card-login .auth-field input:focus { border-color: #ed9a7c; box-shadow: 0 0 0 2px rgba(237, 154, 124, .18); }
 .auth-password-control { position: relative; display: block; }
-.auth-card-login .auth-password-control input { padding-right: 48px; }
+.auth-password-control input { padding-right: 48px; }
 .auth-password-toggle { position: absolute; top: 50%; right: 12px; display: grid; width: 32px; height: 32px; place-items: center; transform: translateY(-50%); border: 0; border-radius: 50%; background: transparent; color: #61544d; cursor: pointer; }
 .auth-password-toggle:hover { background: #f2e7df; color: #8b1e0f; }
 .auth-card-login .auth-submit { min-height: 56px; margin-top: 5px; border-radius: 14px; background: #9d1e0b; box-shadow: 0 8px 18px rgba(157, 30, 11, .2); font-size: 15px; }

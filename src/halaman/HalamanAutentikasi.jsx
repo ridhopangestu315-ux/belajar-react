@@ -60,8 +60,8 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
         <label className={`auth-field ${!sedangDaftar ? 'auth-login-password' : ''}`}>
           <span>Password</span>
           <span className="auth-password-control">
-            <input type={!sedangDaftar && passwordTerlihat ? 'text' : 'password'} name="password" value={password} onChange={(event) => aturPassword(event.target.value)} autoComplete={sedangDaftar ? 'new-password' : 'current-password'} minLength={sedangDaftar ? 8 : undefined} maxLength={72} required placeholder={sedangDaftar ? 'Minimal 8 karakter' : 'Masukkan password'} />
-            {!sedangDaftar && <button className="auth-password-toggle" type="button" aria-label={passwordTerlihat ? 'Sembunyikan password' : 'Tampilkan password'} aria-pressed={passwordTerlihat} onClick={() => aturPasswordTerlihat((terlihat) => !terlihat)}>{passwordTerlihat ? <EyeOff size={19}/> : <Eye size={19}/>}</button>}
+            <input type={passwordTerlihat ? 'text' : 'password'} name="password" value={password} onChange={(event) => aturPassword(event.target.value)} autoComplete={sedangDaftar ? 'new-password' : 'current-password'} minLength={sedangDaftar ? 8 : undefined} maxLength={72} required placeholder={sedangDaftar ? 'Minimal 8 karakter' : 'Masukkan password'} />
+            <button className="auth-password-toggle" type="button" aria-label={passwordTerlihat ? 'Sembunyikan password' : 'Tampilkan password'} aria-pressed={passwordTerlihat} onClick={() => aturPasswordTerlihat((terlihat) => !terlihat)}>{passwordTerlihat ? <EyeOff size={19}/> : <Eye size={19}/>}</button>
           </span>
         </label>
         <button className="auth-submit" type="submit" disabled={sedangMengirim}>

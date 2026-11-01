@@ -47,11 +47,27 @@ try {
 
     kirimJson(['berhasil' => true, 'pesan' => 'Akun berhasil dibuat. Selamat belajar!', 'user' => dataPenggunaSesi($pengguna)], 201);
 } catch (PDOException $kesalahan) {
-    if ($kesalahan->getCode() === '23000') {
+    error_log('StudyFlow register PDO error: ' . $kesalahan->getMessage());
+    if ($kesalahan->getCode() === '23000' && (int) ($kesalahan->errorInfo[1] ?? 0) === 1062) {
         kirimJson(['berhasil' => false, 'pesan' => 'Email tersebut sudah terdaftar. Silakan masuk.'], 409);
+        exit;
+    }
+    if (in_array((int) ($kesalahan->errorInfo[1] ?? 0), [1045, 1049, 2002, 2003, 2005], true)) {
+        kirimJson([
+            'berhasil' => false,
+            'pesan' => 'Koneksi MySQL StudyFlow gagal. Periksa api/config/config.local.php dan pastikan MySQL Laragon berjalan.',
+        ], 503);
         exit;
     }
     kirimKesalahanServer();
 } catch (Throwable $kesalahan) {
+    error_log('StudyFlow register error: ' . $kesalahan->getMessage());
+    if ($kesalahan instanceof RuntimeException && str_contains($kesalahan->getMessage(), 'config.local.php')) {
+        kirimJson([
+            'berhasil' => false,
+            'pesan' => 'Konfigurasi database lokal belum siap. Salin api/config/config.example.php menjadi api/config/config.local.php, lalu isi password MySQL Anda.',
+        ], 503);
+        exit;
+    }
     kirimKesalahanServer();
 }

@@ -15,14 +15,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
 try {
     require_once __DIR__ . '/config/database.php';
     $koneksi = buatKoneksiDatabase();
-    $pernyataan = $koneksi->prepare('SELECT 1');
-    $pernyataan->execute();
+    $pernyataan = $koneksi->query('SELECT DATABASE() AS nama_database');
+    $namaDatabase = $pernyataan->fetchColumn();
+    if (!is_string($namaDatabase) || $namaDatabase === '') {
+        throw new RuntimeException('Koneksi aktif tidak memilih database.');
+    }
 
     kirimJson([
         'berhasil' => true,
         'pesan' => 'PHP berjalan dan koneksi database berhasil.',
         'php' => PHP_VERSION,
-        'database' => 'terhubung',
+        'database' => ['status' => 'terhubung', 'nama' => $namaDatabase],
     ]);
 } catch (PDOException $kesalahan) {
     // Beri diagnosis yang berguna tanpa mengirim DSN, username, atau password ke browser.
@@ -50,7 +53,7 @@ try {
         'pesan' => 'PHP berjalan, tetapi koneksi PDO ke MySQL gagal.',
         'diagnosis' => $diagnosis,
         'php' => PHP_VERSION,
-        'database' => 'tidak terhubung',
+        'database' => ['status' => 'tidak terhubung', 'nama' => null],
     ], 503);
 } catch (RuntimeException $kesalahan) {
     kirimJson([
@@ -58,15 +61,17 @@ try {
         'pesan' => 'Konfigurasi database lokal belum siap.',
         'diagnosis' => $kesalahan->getMessage(),
         'php' => PHP_VERSION,
-        'database' => 'tidak terhubung',
+        'database' => ['status' => 'tidak terhubung', 'nama' => null],
     ], 503);
 } catch (Throwable $kesalahan) {
-    // Detail exception lain tetap dirahasiakan dari browser.
+    error_log('StudyFlow api/test.php: ' . $kesalahan->getMessage());
     kirimJson([
         'berhasil' => false,
         'pesan' => 'PHP berjalan, tetapi terjadi kesalahan saat menguji koneksi database.',
-        'diagnosis' => 'Periksa log error PHP di Laragon untuk detail teknis.',
+        'diagnosis' => $kesalahan instanceof RuntimeException
+            ? $kesalahan->getMessage()
+            : 'Periksa log error PHP di Laragon untuk detail teknis.',
         'php' => PHP_VERSION,
-        'database' => 'tidak terhubung',
+        'database' => ['status' => 'tidak terhubung', 'nama' => null],
     ], 503);
 }

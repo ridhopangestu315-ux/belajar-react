@@ -6,7 +6,6 @@ return [
     'port' => 3306,
     'database' => 'studyflow',
     'username' => 'root',
-    // Ganti dengan password MySQL lokal Anda. Jangan biarkan nilai contoh ini.
-    'password' => 'ISI_PASSWORD_MYSQL_ANDA',
+    'password' => '',
     'charset' => 'utf8mb4',
 ];
