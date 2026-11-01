@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Bell, CalendarDays, ChevronRight, Menu, Moon, Sun } from 'lucide-react'
+import { Bell, CalendarDays, ChevronRight, LogOut, Menu, Moon, Sun } from 'lucide-react'
 import BilahSamping from './komponen/BilahSamping.jsx'
 import Dasbor from './halaman/Dasbor.jsx'
 import { HalamanFokus } from './halaman/HalamanFokus.jsx'
@@ -10,6 +10,7 @@ import NavigasiMobile from './komponen/NavigasiMobile.jsx'
 import AvatarProfil from './komponen/AvatarProfil.jsx'
 import ModalFotoProfil from './komponen/ModalFotoProfil.jsx'
 import PusatPemberitahuan from './komponen/PusatPemberitahuan.jsx'
+import HalamanAutentikasi from './halaman/HalamanAutentikasi.jsx'
 import { HalamanKalender, HalamanData } from './halaman/HalamanPerencanaan.jsx'
 import { usePenyimpananLokal } from './kait/usePenyimpananLokal.js'
 import { ubahKeKunciTanggalLokal } from './fungsi-bantuan/tanggal.js'
@@ -90,7 +91,7 @@ function migrasikanDataBelajar() {
 
 migrasikanDataBelajar()
 
-function Aplikasi() {
+function AplikasiTerlindungi({ onLogout }) {
   const [halamanAktif, aturHalamanAktif] = useState('Dashboard')
   const [apakahBilahSampingTerbuka, aturBilahSamping] = useState(false)
   const [apakahBilahSampingTerlipat, aturBilahSampingTerlipat] = useState(false)
@@ -329,7 +330,7 @@ function Aplikasi() {
   return <div className={`app-shell ${apakahBilahSampingTerlipat ? 'sidebar-collapsed' : ''}`}>
     <BilahSamping halamanAktif={halamanAktif} onNavigate={aturHalamanAktif} isOpen={apakahBilahSampingTerbuka} onClose={() => aturBilahSamping(false)} userName={pengaturan.name} userPhoto={pengaturan.profilePhoto} onProfileClick={() => aturModalProfil(true)} userSummary={[pengaturan.educationLevel, pengaturan.classLevel, pengaturan.institution].filter(Boolean).join(' ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ') || 'Ruang belajarmu'} />
     <main className="main-area">
-      <header className="topbar"><button className="icon-button mobile-menu" aria-label={apakahBilahSampingTerlipat ? 'Tampilkan menu' : 'Buka navigasi'} onClick={ubahTampilanBilahSamping}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-logo-wrap"><img className="brand-logo" src={logoStudyFlow} alt=""/></span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
+      <header className="topbar"><button className="icon-button mobile-menu" aria-label={apakahBilahSampingTerlipat ? 'Tampilkan menu' : 'Buka navigasi'} onClick={ubahTampilanBilahSamping}><Menu size={21}/></button><div className="mobile-brand"><span className="brand-logo-wrap"><img className="brand-logo" src={logoStudyFlow} alt=""/></span><strong>StudyFlow</strong></div><div className="breadcrumb">Ruang belajar <ChevronRight size={15}/> <strong>{halamanAktif}</strong></div><div className="topbar-actions"><span className="today-pill"><CalendarDays size={16}/>{new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date())}</span><button className="icon-button theme-toggle" aria-label={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} title={apakahTemaGelap ? "Gunakan tema terang" : "Gunakan tema gelap"} onClick={() => aturPengaturan((value) => ({ ...value, theme: apakahTemaGelap ? 'light' : 'dark' }))}>{apakahTemaGelap ? <Sun size={18}/> : <Moon size={18}/>}</button><button className="icon-button notification-button" aria-label="Pengingat" title="Pengingat" onClick={() => aturHalamanAktif('Pengingat')}><Bell size={19}/>{daftarPengingat.some((item) => !item.done) && <i/>}</button><button className="icon-button auth-logout" type="button" aria-label="Keluar" title="Keluar" onClick={onLogout}><LogOut size={18}/></button><AvatarProfil className="avatar-small" name={pengaturan.name} photo={pengaturan.profilePhoto} onClick={() => aturModalProfil(true)}/></div></header>
       <section className="page-content" key={halamanAktif}>
         {halamanAktif === 'Dashboard' && <Dasbor name={pengaturan.name} daftarTugas={daftarTugasTerurut} daftarMataPelajaran={daftarMataPelajaran} daftarAktivitas={daftarAktivitas} jumlahTugasAktif={jumlahTugasAktif} jumlahTugasSelesai={jumlahTugasSelesai} progress={progress} riwayatFokus={riwayatFokus} now={tanggalSaatIni} onToggleTask={ubahStatusTugas} onAddTask={() => bukaFormulirTambah('Tugas')} onNavigate={aturHalamanAktif} onStartFocus={() => { aturHalamanAktif('Focus Mode'); mulaiFokusDariDasbor() }} animateStats={!statistikSudahDianimasikan.current}/>}
         {pageToData[halamanAktif] && <HalamanData page={halamanAktif} data={({ Tugas: daftarTugasTerurut, 'Mata Pelajaran': daftarMataPelajaran, Catatan: daftarCatatan, Pengingat: [...daftarPengingat].sort((a,b) => (a.date || '').localeCompare(b.date || '')) })[halamanAktif]} kataPencarian={kataPencarian} aturKataPencarian={aturKataPencarian} filter={filterTugas} setFilter={aturFilterTugas} filterMataPelajaran={filterMataPelajaran} aturFilterMataPelajaran={aturFilterMataPelajaran} onAdd={() => bukaFormulirTambah()} onEdit={(item) => bukaFormulirTambah(halamanAktif, item)} onDelete={(id) => hapusData(halamanAktif, id)} onToggle={(id) => halamanAktif === 'Tugas' ? ubahStatusTugas(id) : aturDaftarPengingat((list) => list.map((entry) => entry.id === id ? { ...entry, done: !entry.done } : entry))}/>}
@@ -344,6 +345,56 @@ function Aplikasi() {
     <NavigasiMobile halamanAktif={halamanAktif} onNavigate={aturHalamanAktif}/>
     <PusatPemberitahuan notifikasi={notifikasi} konfirmasi={konfirmasi} tutupNotifikasi={tutupNotifikasi} tampilkanNotifikasi={tampilkanNotifikasi} selesaikanKonfirmasi={selesaikanKonfirmasi}/>
   </div>
+}
+
+function Aplikasi() {
+  const [statusAutentikasi, aturStatusAutentikasi] = useState('memuat')
+  const [pesanNotifikasi, aturPesanNotifikasi] = useState(null)
+
+  const tampilkanNotifikasiAutentikasi = useCallback((pesan, jenis = 'success') => {
+    aturPesanNotifikasi({ id: Date.now(), pesan, jenis })
+  }, [])
+
+  useEffect(() => {
+    let masihAktif = true
+    fetch('/api/auth/check-session.php', { method: 'GET', credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(async (respons) => {
+        const hasil = await respons.json()
+        if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Status sesi belum dapat diperiksa.')
+        if (masihAktif) {
+          aturStatusAutentikasi(hasil.authenticated ? 'masuk' : 'keluar')
+        }
+      })
+      .catch(() => {
+        if (!masihAktif) return
+        aturStatusAutentikasi('keluar')
+        tampilkanNotifikasiAutentikasi('Sesi belum dapat diperiksa. Pastikan server PHP aktif, lalu masuk kembali.', 'error')
+      })
+    return () => { masihAktif = false }
+  }, [tampilkanNotifikasiAutentikasi])
+
+  async function keluar() {
+    try {
+      const respons = await fetch('/api/auth/logout.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+      })
+      const hasil = await respons.json()
+      if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Belum berhasil keluar.')
+      aturStatusAutentikasi('keluar')
+      tampilkanNotifikasiAutentikasi(hasil.pesan, 'success')
+    } catch (kesalahan) {
+      tampilkanNotifikasiAutentikasi(kesalahan instanceof TypeError ? 'Tidak dapat terhubung ke server untuk keluar.' : kesalahan.message, 'error')
+    }
+  }
+
+  return <>
+    {statusAutentikasi === 'memuat' && <main className="auth-screen"><div className="auth-loading" role="status">Memeriksa sesi StudyFlow...</div></main>}
+    {statusAutentikasi === 'keluar' && <HalamanAutentikasi onBerhasilMasuk={() => aturStatusAutentikasi('masuk')} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi}/>}
+    {statusAutentikasi === 'masuk' && <AplikasiTerlindungi onLogout={keluar}/>}
+    <PusatPemberitahuan notifikasi={pesanNotifikasi} konfirmasi={null} tutupNotifikasi={() => aturPesanNotifikasi(null)} tampilkanNotifikasi={tampilkanNotifikasiAutentikasi} selesaikanKonfirmasi={() => {}}/>
+  </>
 }
 
 export default Aplikasi
