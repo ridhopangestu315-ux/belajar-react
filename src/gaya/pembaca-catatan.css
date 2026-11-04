@@ -144,7 +144,7 @@
 }
 
 :root[data-theme="dark"] .pembaca-catatan-hapus {
-    color: #f0aaa1;
+    color: var(--danger-soft);
     background: #432c29;
     border-color: #5a3732;
 }

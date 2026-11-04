@@ -275,23 +275,23 @@
 }
 
 :root[data-theme="dark"] .studyflow-toast-error .studyflow-alert-icon {
-    color: #f0aaa1;
+    color: var(--danger-soft);
     background: #432c29;
 }
 
 :root[data-theme="dark"] .studyflow-toast-error.studyflow-confirm-icon {
-    color: #f0aaa1;
+    color: var(--danger-soft);
     background: #432c29;
 }
 
 :root[data-theme="dark"] .studyflow-toast-warning .studyflow-alert-icon {
     color: #ecc17e;
-    background: #403526;
+    background: var(--text-strong);
 }
 
 :root[data-theme="dark"] .studyflow-toast-warning.studyflow-confirm-icon {
     color: #ecc17e;
-    background: #403526;
+    background: var(--text-strong);
 }
 
 @keyframes studyflow-overlay-in {

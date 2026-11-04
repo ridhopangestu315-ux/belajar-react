@@ -6,6 +6,10 @@ export default defineConfig({
   // GitHub Pages memakai subpath repository; hosting InfinityFree memakai root domain.
   base: process.env.GITHUB_ACTIONS ? '/belajar-react/' : '/',
   plugins: [react()],
+  build: {
+    minify: false,
+    sourcemap: true,
+  },
   // Saat development, teruskan /api/... ke folder proyek pada Apache Laragon.
   server: {
     proxy: {

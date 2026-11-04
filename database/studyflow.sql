@@ -233,3 +233,14 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
   CONSTRAINT `fk_password_resets_user` FOREIGN KEY (`user_id`)
     REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Data fitur StudyFlow per akun untuk sinkronisasi antarperangkat.
+CREATE TABLE IF NOT EXISTS `user_app_data` (
+  `pengguna_id` BIGINT UNSIGNED NOT NULL,
+  `jenis` VARCHAR(64) NOT NULL,
+  `isi_json` LONGTEXT NOT NULL,
+  `diperbarui_pada` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`pengguna_id`, `jenis`),
+  CONSTRAINT `fk_user_app_data_pengguna` FOREIGN KEY (`pengguna_id`)
+    REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

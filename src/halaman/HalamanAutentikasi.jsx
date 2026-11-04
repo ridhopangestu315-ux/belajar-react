@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, BookOpen, LoaderCircle, LockKeyhole } from 'lucide-react'
+import { ArrowRight, LoaderCircle, LockKeyhole } from 'lucide-react'
 import InputPassword from '../komponen/InputPassword.jsx'
 
 const logoStudyFlow = `${import.meta.env.BASE_URL}assets/logo-studyflow.png`
@@ -22,13 +22,18 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrfToken },
         body: JSON.stringify({ name: nama, email, password }),
       })
-      const hasil = await respons.json()
+      let hasil
+      try {
+        hasil = await respons.json()
+      } catch {
+        throw new Error('Permintaan belum dapat diproses. Coba lagi beberapa saat.')
+      }
       if (!respons.ok || !hasil.berhasil) throw new Error(hasil.pesan || 'Permintaan belum berhasil. Coba lagi.')
       tampilkanNotifikasi(hasil.pesan, 'success')
       onBerhasilMasuk(hasil.user, hasil.csrfToken)
     } catch (kesalahan) {
       tampilkanNotifikasi(kesalahan instanceof TypeError
-        ? 'Tidak dapat terhubung ke server. Pastikan PHP dan MySQL sedang berjalan.'
+        ? 'Koneksi ke server gagal. Coba lagi beberapa saat.'
         : kesalahan.message, 'error')
     } finally {
       aturSedangMengirim(false)
@@ -43,7 +48,6 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
   return <main className="auth-screen">
     <section className={`auth-card ${sedangDaftar ? 'auth-card-register' : 'auth-card-login'}`} aria-labelledby="judul-autentikasi">
       <div className="auth-brand"><span className="auth-logo"><img src={logoStudyFlow} alt=""/></span><span>StudyFlow</span></div>
-      <div className="auth-intro-icon"><BookOpen size={22}/></div>
       <p className="auth-eyebrow">RUANG BELAJAR PRIBADIMU</p>
       <h1 id="judul-autentikasi">{sedangDaftar ? 'Mulai perjalanan belajarmu' : 'Senang melihatmu kembali'}</h1>
       <p className="auth-description">{sedangDaftar ? 'Buat akun untuk menyimpan ruang belajarmu.' : 'Masuk untuk melanjutkan rencana belajarmu.'}</p>
@@ -58,15 +62,18 @@ export default function HalamanAutentikasi({ onBerhasilMasuk, tampilkanNotifikas
           <input type="email" name="email" value={email} onChange={(event) => aturEmail(event.target.value)} autoComplete="email" maxLength={254} required placeholder="nama@email.com" />
         </label>
         <label className={`auth-field ${!sedangDaftar ? 'auth-login-password' : ''}`}>
-          <span>Password</span>
-          <InputPassword key={mode} name="password" value={password} onChange={(event) => aturPassword(event.target.value)} autoComplete={sedangDaftar ? 'new-password' : 'current-password'} minLength={sedangDaftar ? 8 : undefined} maxLength={72} required placeholder={sedangDaftar ? 'Minimal 8 karakter' : 'Masukkan password'} />
+          <span>Kata sandi</span>
+          <InputPassword key={mode} name="password" value={password} onChange={(event) => aturPassword(event.target.value)} autoComplete={sedangDaftar ? 'new-password' : 'current-password'} minLength={sedangDaftar ? 8 : undefined} maxLength={72} required placeholder={sedangDaftar ? 'Minimal 8 karakter' : 'Masukkan kata sandi'} />
         </label>
+        <aside className="auth-password-note" role="note">
+          <LockKeyhole size={16} aria-hidden="true"/>
+          <span>{sedangDaftar ? 'Fitur lupa kata sandi belum tersedia. Simpan dan ingat kata sandi yang kamu buat.' : 'Fitur lupa kata sandi belum ada, inget2 yak passwordnya 🗿'}</span>
+        </aside>
         <button className="auth-submit" type="submit" disabled={sedangMengirim}>
           {sedangMengirim ? <><LoaderCircle className="auth-spinner" size={18}/> Memproses...</> : <>{sedangDaftar ? 'Buat akun' : 'Masuk'} <ArrowRight size={18}/></>}
         </button>
       </form>
 
-      {!sedangDaftar && <button className="auth-forgot" type="button" onClick={() => tampilkanNotifikasi('Pemulihan kata sandi belum tersedia. Silakan hubungi pengelola StudyFlow.', 'information')}><LockKeyhole size={14}/> Lupa kata sandi? <span aria-hidden="true">›</span></button>}
 
       <p className="auth-switch">{sedangDaftar ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
         <button type="button" onClick={ubahMode} disabled={sedangMengirim}>{sedangDaftar ? 'Masuk' : 'Daftar sekarang'}</button>

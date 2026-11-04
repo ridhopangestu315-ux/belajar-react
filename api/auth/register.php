@@ -12,15 +12,15 @@ $password = (string) ($masukan['password'] ?? '');
 $jumlahKarakterNama = preg_match_all('/./us', $nama);
 
 if ($nama === '' || $jumlahKarakterNama === false || $jumlahKarakterNama > 100) {
-    kirimJson(['berhasil' => false, 'pesan' => 'Nama wajib diisi dan maksimal 100 karakter.'], 422);
+    kirimJson(['berhasil' => false, 'pesan' => 'Masukkan nama kamu (maksimal 100 karakter).'], 422);
     exit;
 }
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 254) {
-    kirimJson(['berhasil' => false, 'pesan' => 'Masukkan alamat email yang valid.'], 422);
+    kirimJson(['berhasil' => false, 'pesan' => 'Masukkan alamat email dengan benar.'], 422);
     exit;
 }
 if (strlen($password) < 8 || strlen($password) > 72) {
-    kirimJson(['berhasil' => false, 'pesan' => 'Password harus terdiri dari 8 sampai 72 karakter.'], 422);
+    kirimJson(['berhasil' => false, 'pesan' => 'Kata sandi harus terdiri dari 8 sampai 72 karakter.'], 422);
     exit;
 }
 
@@ -29,7 +29,7 @@ try {
     $periksa = $pdo->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
     $periksa->execute(['email' => $email]);
     if ($periksa->fetch()) {
-        kirimJson(['berhasil' => false, 'pesan' => 'Email tersebut sudah terdaftar. Silakan masuk.'], 409);
+        kirimJson(['berhasil' => false, 'pesan' => 'Email ini sudah terdaftar. Silakan masuk atau gunakan email lain.'], 409);
         exit;
     }
 
@@ -51,13 +51,13 @@ try {
 } catch (PDOException $kesalahan) {
     error_log('StudyFlow register PDO error: ' . $kesalahan->getMessage());
     if ($kesalahan->getCode() === '23000' && (int) ($kesalahan->errorInfo[1] ?? 0) === 1062) {
-        kirimJson(['berhasil' => false, 'pesan' => 'Email tersebut sudah terdaftar. Silakan masuk.'], 409);
+        kirimJson(['berhasil' => false, 'pesan' => 'Email ini sudah terdaftar. Silakan masuk atau gunakan email lain.'], 409);
         exit;
     }
     if (in_array((int) ($kesalahan->errorInfo[1] ?? 0), [1045, 1049, 2002, 2003, 2005], true)) {
         kirimJson([
             'berhasil' => false,
-            'pesan' => 'Koneksi MySQL StudyFlow gagal. Periksa api/config/config.local.php dan pastikan MySQL Laragon berjalan.',
+            'pesan' => 'Pendaftaran belum bisa diproses sekarang. Coba lagi beberapa saat.',
         ], 503);
         exit;
     }
@@ -67,7 +67,7 @@ try {
     if ($kesalahan instanceof RuntimeException && str_contains($kesalahan->getMessage(), 'config.local.php')) {
         kirimJson([
             'berhasil' => false,
-            'pesan' => 'Konfigurasi database lokal belum siap. Salin api/config/config.example.php menjadi api/config/config.local.php, lalu isi password MySQL Anda.',
+            'pesan' => 'Pendaftaran belum bisa dilakukan sekarang. Coba lagi beberapa saat.',
         ], 503);
         exit;
     }

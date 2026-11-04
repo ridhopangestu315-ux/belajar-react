@@ -39,12 +39,33 @@ export default function ModalFotoProfil({ name, photo = '', onClose, onSave }) {
       const image = new Image()
       image.onerror = () => { setError('File ini bukan gambar yang valid.'); setBusy(false) }
       image.onload = () => {
-        const canvas = document.createElement('canvas')
         const scale = Math.min(1, 512 / Math.max(image.width, image.height))
-        canvas.width = Math.max(1, Math.round(image.width * scale))
-        canvas.height = Math.max(1, Math.round(image.height * scale))
-        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
-        setPreview(canvas.toDataURL('image/jpeg', 0.82))
+        let width = Math.max(1, Math.round(image.width * scale))
+        let height = Math.max(1, Math.round(image.height * scale))
+        let quality = 0.82
+        const encodeFoto = () => {
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          canvas.getContext('2d').drawImage(image, 0, 0, width, height)
+          return canvas.toDataURL('image/jpeg', quality)
+        }
+        let dataUrl = encodeFoto()
+        while (dataUrl.length > 900_000 && quality > 0.52) {
+          quality = Math.max(0.5, quality - 0.1)
+          dataUrl = encodeFoto()
+        }
+        while (dataUrl.length > 900_000 && width > 256) {
+          width = Math.round(width * 0.75)
+          height = Math.round(height * 0.75)
+          dataUrl = encodeFoto()
+        }
+        if (dataUrl.length > 900_000) {
+          setError('Foto terlalu besar untuk disinkronkan. Pilih foto lain yang lebih kecil.')
+          setBusy(false)
+          return
+        }
+        setPreview(dataUrl)
         setBusy(false)
       }
       image.src = reader.result

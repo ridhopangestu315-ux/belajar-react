@@ -3,7 +3,7 @@ import { Bell, Database, Monitor, Settings2, ShieldCheck, Timer, Trash2, UserRou
 import PengantarHalaman from '../komponen/PengantarHalaman.jsx'
 import InputPassword from '../komponen/InputPassword.jsx'
 
-export function HalamanPengaturan({ pengaturan, aturPengaturan, akun, onChangeEmail, onChangePassword, onReset, tampilkanNotifikasi }) {
+export function HalamanPengaturan({ pengaturan, aturPengaturan, akun, onChangeEmail, onChangePassword, onReset, onDeleteAccount, tampilkanNotifikasi }) {
   const [emailBaru, aturEmailBaru] = useState('')
   const [verifikasiEmail, aturVerifikasiEmail] = useState('')
   const [passwordLama, aturPasswordLama] = useState('')
@@ -11,7 +11,19 @@ export function HalamanPengaturan({ pengaturan, aturPengaturan, akun, onChangeEm
   const [konfirmasiPassword, aturKonfirmasiPassword] = useState('')
   const [sedangMenyimpanEmail, aturSedangMenyimpanEmail] = useState(false)
   const [sedangMenyimpanPassword, aturSedangMenyimpanPassword] = useState(false)
+  const [passwordHapusAkun, aturPasswordHapusAkun] = useState('')
+  const [sedangMenghapusAkun, aturSedangMenghapusAkun] = useState(false)
   const educationOptions = ['SMP', 'SMA', 'SMK', 'Perguruan Tinggi', 'Belajar Mandiri', 'Lainnya']
+  async function hapusAkun(event) {
+    event.preventDefault()
+    aturSedangMenghapusAkun(true)
+    try {
+      await onDeleteAccount(passwordHapusAkun)
+    } finally {
+      aturPasswordHapusAkun('')
+      aturSedangMenghapusAkun(false)
+    }
+  }
 
   function ubahPengaturan(name, value) {
     aturPengaturan((current) => ({ ...current, [name]: value }))
@@ -101,6 +113,7 @@ export function HalamanPengaturan({ pengaturan, aturPengaturan, akun, onChangeEm
       <section className="panel settings-section settings-data-section">
         <div className="settings-section-heading"><span><Database size={19}/></span><div><h2>Manajemen Data</h2><p>Data belajar akun ini disimpan di browser yang sedang digunakan.</p></div></div>
         <div className="settings-data-action"><div><strong>Hapus semua data belajar</strong><small>Tugas, catatan, mata pelajaran, pengingat, dan riwayat fokus.</small></div><button className="danger-button" onClick={onReset}><Trash2 size={17}/>Hapus semua data</button></div>
+        <div className="settings-data-action settings-account-delete"><div><strong>Hapus akun permanen</strong><small>Hapus akun dan seluruh data tersimpan di server. Password saat ini dan konfirmasi frasa diperlukan.</small></div><form className="settings-account-delete-form" onSubmit={hapusAkun}><label className="field-label">Password saat ini<InputPassword inputClassName="form-control" name="delete-account-password" value={passwordHapusAkun} onChange={(event) => aturPasswordHapusAkun(event.target.value)} required autoComplete="current-password" placeholder="Verifikasi password" /></label><button className="danger-button" type="submit" disabled={sedangMenghapusAkun}>{sedangMenghapusAkun ? 'Menghapus akun...' : <><Trash2 size={17}/>Hapus akun permanen</>}</button></form></div>
       </section>
     </div>
   </div>
